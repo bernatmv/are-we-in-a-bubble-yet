@@ -16,22 +16,36 @@ const otherCanonical = new URL(c.otherPath, site).href;
 
 const colors = { Extreme: '#ff4d2e', Elevated: '#d7a329', Complacent: '#df7b17', Neutral: '#526656' };
 
-function chartPoints(history: (number | number[])[][]) {
+function chartGeometry(history: readonly (readonly number[])[]) {
   const values = history.map((point) => Number(point[1]));
+  const times = history.map((point) => Number(point[0]));
   const min = Math.min(...values);
   const max = Math.max(...values);
-  return values.map((value, index) => {
-    const x = (index / (values.length - 1)) * 100;
+  const start = Math.min(...times);
+  const end = Math.max(...times);
+  const points = values.map((value, index) => {
+    const x = ((times[index] - start) / Math.max(end - start, 1)) * 100;
     const y = 36 - ((value - min) / Math.max(max - min, 1)) * 30;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(' ');
+    return { x, y };
+  });
+  let line = `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
+  for (let index = 0; index < points.length - 1; index++) {
+    const previous = points[Math.max(0, index - 1)];
+    const current = points[index];
+    const next = points[index + 1];
+    const after = points[Math.min(points.length - 1, index + 2)];
+    const control1 = { x: current.x + (next.x - previous.x) / 6, y: current.y + (next.y - previous.y) / 6 };
+    const control2 = { x: next.x - (after.x - current.x) / 6, y: next.y - (after.y - current.y) / 6 };
+    line += ` C ${control1.x.toFixed(2)} ${control1.y.toFixed(2)}, ${control2.x.toFixed(2)} ${control2.y.toFixed(2)}, ${next.x.toFixed(2)} ${next.y.toFixed(2)}`;
+  }
+  return { line, area: `${line} L 100 36 L 0 36 Z`, last: points.at(-1), start, end };
 }
 
 const updated = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(data.updatedAt));
 const elevatedCount = data.indicators.filter((item) => item.score >= 60).length;
 const marketEvents = locale === 'es'
-  ? [{ year: 2000, label: 'Puntocom' }, { year: 2008, label: 'Crisis de crédito' }, { year: 2020, label: 'COVID' }, { year: 2022, label: 'Shock de tipos' }]
-  : [{ year: 2000, label: 'Dot-com' }, { year: 2008, label: 'Credit crisis' }, { year: 2020, label: 'COVID' }, { year: 2022, label: 'Rate shock' }];
+  ? [{ time: 2000.19, year: 2000, label: 'Puntocom' }, { time: 2008.70, year: 2008, label: 'Crisis de crédito' }, { time: 2020.21, year: 2020, label: 'COVID' }, { time: 2022.45, year: 2022, label: 'Shock de tipos' }]
+  : [{ time: 2000.19, year: 2000, label: 'Dot-com' }, { time: 2008.70, year: 2008, label: 'Credit crisis' }, { time: 2020.21, year: 2020, label: 'COVID' }, { time: 2022.45, year: 2022, label: 'Rate shock' }];
 
 function localizedIndicator(indicator: typeof data.indicators[number]) {
   if (locale === 'en') return indicator;
@@ -104,6 +118,7 @@ const schema = {
     <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="manifest" href="/site.webmanifest" />
+    <link rel="alternate" type="application/rss+xml" title="Are We in a Bubble Yet?" href="/feed.xml" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Are We in a Bubble Yet?" />
     <meta property="og:title" content={c.title} />
@@ -132,7 +147,7 @@ const schema = {
   <body>
     <header class="site-header wrap">
       <a class="wordmark" href={c.path} aria-label={c.homeLabel}>
-        <span class="mark"></span>
+        <span class="mark">?</span>
         {c.wordmark}
       </a>
       <div class="header-meta">
@@ -142,9 +157,8 @@ const schema = {
     </header>
 
     <main>
-      <section class="hero wrap" aria-labelledby="verdict-title">
+      <section class="hero wrap" aria-labelledby="verdict-title" data-score={data.score}>
         <div class="hero-copy">
-          <p class="kicker">{c.shortAnswer}</p>
           <h1 id="verdict-title" class:list={[data.verdict === 'MAYBE' && 'medium', !['YES', 'NO', 'MAYBE'].includes(data.verdict) && 'long']}>{c.verdict[data.verdict as keyof typeof c.verdict]}<i>.</i></h1>
           <p class="hero-summary">{c.summaries[data.verdict as keyof typeof c.summaries]}</p>
           <p class="hero-detail">{heroDetail}</p>
@@ -169,7 +183,7 @@ const schema = {
             })}
           </nav>
         </div>
-        <div class="scroll-cue" aria-hidden="true">↓ <span>{c.readEvidence}</span></div>
+        <a class="scroll-cue" href="#evidence-title">↓ <span>{c.readEvidence}</span></a>
       </section>
 
       <section class="evidence wrap" aria-labelledby="evidence-title">
@@ -184,18 +198,23 @@ const schema = {
         <div class="cards">
           {data.indicators.map((rawIndicator, index) => {
             const indicator = localizedIndicator(rawIndicator);
-            const startYear = Number(indicator.history[0][0]);
-            const endYear = Number(indicator.history.at(-1)?.[0]);
-            const visibleEvents = marketEvents.filter((event) => event.year >= startYear && event.year < endYear + 1)
-              .map((event) => ({ ...event, position: ((event.year - startYear) / Math.max(endYear - startYear, 1)) * 100 }));
+            const chart = chartGeometry(indicator.history);
+            const visibleEvents = marketEvents.filter((event) => event.time >= chart.start && chart.end >= event.time)
+              .map((event) => ({ ...event, position: ((event.time - chart.start) / Math.max(chart.end - chart.start, 1)) * 100 }));
+            const category = indicator.eyebrow.split('·')[0].trim();
+            const weight = indicator.eyebrow.match(/\d+%/)?.[0];
             return (
             <article id={`signal-${indicator.id}`} class:list={['indicator', index === 0 && 'featured']} style={`--signal:${colors[rawIndicator.status as keyof typeof colors] ?? '#526656'}`}>
               <div class="card-header">
                 <div>
-                  <p class="eyebrow">{String(index + 1).padStart(2, '0')} / {indicator.eyebrow}</p>
+                  <p class="eyebrow">{String(index + 1).padStart(2, '0')} / {category}</p>
                   <h3>{indicator.name}</h3>
+                  {indicator.id === 'buffett' && <span class="buffett-note">{locale === 'es' ? 'EL INDICADOR DE BUFFETT' : 'THE BUFFETT INDICATOR'}</span>}
                 </div>
-                <span class="status"><i></i>{statusCopy[locale][rawIndicator.status as keyof typeof statusCopy.en]}</span>
+                <div class="card-meta">
+                  <span class="weight"><strong>{weight}</strong><small>{locale === 'es' ? 'PESO' : 'WEIGHT'}</small></span>
+                  <span class="status"><i></i>{statusCopy[locale][rawIndicator.status as keyof typeof statusCopy.en]}</span>
+                </div>
               </div>
 
               <div class="metric-row">
@@ -209,12 +228,18 @@ const schema = {
               <div class="chart-wrap">
                 <div class="chart-plot">
                   <svg class="chart" viewBox="0 0 100 40" preserveAspectRatio="none" role="img" aria-label={`${indicator.name} historical trend`}>
+                    <defs>
+                      <pattern id={`dither-${indicator.id}`} width="2.4" height="2.4" patternUnits="userSpaceOnUse">
+                        <circle cx=".65" cy=".65" r=".34" fill="var(--signal)" />
+                        <circle cx="1.85" cy="1.85" r=".22" fill="var(--signal)" />
+                      </pattern>
+                    </defs>
                     <line x1="0" y1="36" x2="100" y2="36" />
                     <line x1="0" y1="21" x2="100" y2="21" />
                     <line x1="0" y1="6" x2="100" y2="6" />
-                    <polygon points={`0,36 ${chartPoints(indicator.history)} 100,36`} />
-                    <polyline points={chartPoints(indicator.history)} />
-                    <circle cx="100" cy={chartPoints(indicator.history).split(' ').at(-1)?.split(',')[1]} r="1.7" />
+                    <path class="chart-area" d={chart.area} fill={`url(#dither-${indicator.id})`} />
+                    <path class="chart-line" d={chart.line} />
+                    <circle cx={chart.last?.x} cy={chart.last?.y} r="1.7" />
                   </svg>
                   <div class="event-layer" aria-hidden="true">
                     {visibleEvents.map((event) => (
@@ -224,7 +249,7 @@ const schema = {
                     ))}
                   </div>
                 </div>
-                <div class="chart-years"><span>{indicator.history[0][0]}</span><span>{c.trend}</span><span>{indicator.history.at(-1)?.[0]}</span></div>
+                <div class="chart-years"><span>{Math.floor(chart.start)}</span><span>{c.trend}</span><span>{Math.floor(chart.end)}</span></div>
               </div>
 
               <p class="description">{indicator.description}</p>
@@ -263,7 +288,7 @@ const schema = {
 
     <footer class="wrap">
       <div class="footer-brand">
-        <a class="wordmark" href={c.path}><span class="mark"></span> {c.wordmark}</a>
+        <a class="wordmark" href={c.path}><span class="mark">?</span> {c.wordmark}</a>
         <p>{c.disclaimer}</p>
       </div>
       <nav class="footer-reading" aria-label={c.explore}>
@@ -282,13 +307,13 @@ const schema = {
   :root { --paper:#f0eee7; --ink:#151711; --muted:#6d7067; --line:#c9c7bd; --risk:#ff4d2e; --green:#526656; }
   * { box-sizing:border-box; }
   html { scroll-behavior:smooth; }
-  body { margin:0; color:var(--ink); background:var(--paper); font-family:'Manrope', sans-serif; font-size:15px; }
+  body { margin:0; overflow-x:clip; color:var(--ink); background:var(--paper); font-family:'Manrope', sans-serif; font-size:15px; }
   body::before { content:''; position:fixed; inset:0; pointer-events:none; opacity:.26; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E"); z-index:10; mix-blend-mode:multiply; }
   a { color:inherit; }
   .wrap { width:min(1320px, calc(100% - 64px)); margin-inline:auto; }
   .site-header { height:78px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
   .wordmark { display:flex; align-items:center; gap:11px; font-family:'DM Mono', monospace; font-size:12px; font-weight:500; letter-spacing:.08em; text-decoration:none; }
-  .mark { width:12px; height:12px; border-radius:50%; display:inline-block; background:var(--risk); box-shadow:0 0 0 4px rgba(255,77,46,.14); }
+  .mark { width:16px; height:16px; border-radius:50%; display:grid; place-items:center; color:var(--paper); background:var(--risk); box-shadow:0 0 0 3px var(--ink); font:500 9px/1 'DM Mono',monospace; letter-spacing:0; }
   .header-meta { display:flex; align-items:center; gap:22px; }
   .language { border:1px solid var(--line); border-radius:50%; width:32px; height:32px; display:grid; place-items:center; text-decoration:none; font:500 9px 'DM Mono', monospace; letter-spacing:.08em; transition:color .2s,border-color .2s,background .2s; }
   .language:hover { color:var(--risk); border-color:var(--risk); background:rgba(255,255,255,.35); }
@@ -311,11 +336,13 @@ const schema = {
   .score-track span { display:block; height:100%; background:var(--risk); transform-origin:left; animation:grow 1.2s .25s both cubic-bezier(.2,.8,.2,1); }
   .score-labels { color:var(--muted); font-size:8px; }
   .score-panel p { margin:28px 0 0; max-width:380px; color:var(--muted); font-size:13px; line-height:1.6; }
-  .signal-dials { display:grid; grid-template-columns:repeat(6,minmax(52px,1fr)); gap:8px; margin-top:24px; padding-top:20px; border-top:1px solid var(--line); }
-  .signal-dials a { min-width:0; color:inherit; text-decoration:none; padding:7px 5px 9px; border:1px solid transparent; border-radius:4px; transition:background .2s,border-color .2s,transform .2s; }
-  .signal-dials a:hover,.signal-dials a:focus-visible { background:rgba(255,255,255,.35); border-color:var(--line); transform:translateY(-2px); outline:none; }
-  .scroll-cue { position:absolute; bottom:26px; left:0; display:flex; gap:12px; align-items:center; color:var(--risk); font:500 9px 'DM Mono', monospace; letter-spacing:.12em; }
+  .signal-dials { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 18px; margin-top:24px; padding-top:20px; border-top:1px solid var(--line); }
+  .signal-dials a { min-width:0; color:inherit; text-decoration:none; padding:8px 0 11px; border-bottom:1px solid color-mix(in srgb,var(--line) 65%,transparent); }
+  .signal-dials a:focus-visible { outline:1px solid var(--risk); outline-offset:4px; }
+  .scroll-cue { position:absolute; bottom:26px; left:0; display:flex; gap:12px; align-items:center; color:var(--risk); font:500 9px 'DM Mono', monospace; letter-spacing:.12em; text-decoration:none; }
+  .scroll-cue:hover span { text-decoration:underline; text-underline-offset:4px; }
   .evidence { padding-block:120px; border-top:1px solid var(--ink); }
+  #evidence-title { scroll-margin-top:48px; }
   .section-heading { display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:end; margin-bottom:70px; }
   h2 { font:400 clamp(54px, 6vw, 92px)/.92 'Instrument Serif', serif; letter-spacing:-.045em; margin:25px 0 0; }
   h2 em { color:var(--muted); font-weight:400; }
@@ -325,8 +352,13 @@ const schema = {
   .indicator:hover { background:rgba(255,255,255,.3); }
   .indicator.featured { grid-column:span 2; }
   .card-header { display:flex; justify-content:space-between; gap:20px; align-items:start; }
+  .card-meta { display:flex; align-items:center; gap:14px; }
+  .weight { display:flex; align-items:baseline; gap:5px; padding-right:14px; border-right:1px solid var(--line); }
+  .weight strong { color:var(--risk); font:400 28px/1 'Instrument Serif',serif; }
+  .weight small { color:var(--muted); font:500 7px 'DM Mono',monospace; letter-spacing:.1em; }
   .eyebrow { color:var(--muted); margin:0 0 14px; }
   h3 { font:400 34px 'Instrument Serif', serif; margin:0; }
+  .buffett-note { display:inline-block; margin-top:10px; padding-bottom:3px; border-bottom:1px solid var(--risk); color:var(--risk); font:500 7px 'DM Mono',monospace; letter-spacing:.12em; }
   .status { flex:none; display:flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:20px; padding:7px 10px; font:500 9px 'DM Mono', monospace; letter-spacing:.1em; text-transform:uppercase; }
   .status i { width:7px; height:7px; background:var(--signal); border-radius:50%; }
   .metric-row { display:grid; grid-template-columns:1fr 180px; gap:40px; align-items:end; padding:38px 0 32px; }
@@ -336,8 +368,8 @@ const schema = {
   .chart-plot { position:relative; }
   .chart { display:block; width:100%; height:180px; overflow:visible; }
   .chart line { stroke:var(--line); stroke-width:.25; stroke-dasharray:1 2; }
-  .chart polygon { fill:color-mix(in srgb, var(--signal) 11%, transparent); }
-  .chart polyline { fill:none; stroke:var(--signal); stroke-width:.75; vector-effect:non-scaling-stroke; }
+  .chart-area { opacity:.38; }
+  .chart-line { fill:none; stroke:var(--signal); stroke-width:1.15; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; filter:drop-shadow(0 1px 0 color-mix(in srgb,var(--paper) 70%,transparent)); }
   .chart circle { fill:var(--signal); vector-effect:non-scaling-stroke; }
   .event-layer { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
   .market-event { position:absolute; top:1px; bottom:8px; width:1px; border-left:1px dashed color-mix(in srgb,var(--ink) 36%,transparent); }
@@ -369,17 +401,20 @@ const schema = {
   @keyframes grow { from { transform:scaleX(0); } }
   @keyframes pulse { 50% { box-shadow:0 0 0 5px rgba(95,139,102,.12); } }
   @media (max-width:800px) {
-    .wrap { width:min(100% - 32px, 1320px); }
+    .wrap { width:min(calc(100% - 32px), 1320px); }
     .site-header { height:65px; }
     .freshness { display:none; }
-    .hero { min-height:auto; grid-template-columns:1fr; gap:70px; padding:90px 0 110px; }
+    .hero { min-height:auto; grid-template-columns:1fr; gap:64px; padding:64px 0 88px; isolation:isolate; }
+    .hero::before { content:''; position:absolute; z-index:-1; width:280px; height:280px; right:-125px; top:15px; border-radius:50%; background:radial-gradient(circle at 38% 38%,rgba(255,255,255,.48) 0 5%,rgba(255,77,46,.14) 6% 48%,transparent 49%); }
+    .hero::after { content:attr(data-score); position:absolute; z-index:-1; right:-8px; top:300px; color:rgba(21,23,17,.035); font:400 210px/1 'Instrument Serif',serif; letter-spacing:-.09em; }
     .score-panel > p { max-width:100%; }
     h1 { font-size:46vw; margin:35px 0 50px -4px; }
     h1.medium { font-size:33vw; }
     h1.long { font-size:clamp(46px,12vw,64px); }
     .hero-summary { font-size:20px; }
-    .signal-dials { display:flex; overflow-x:auto; gap:8px; padding-bottom:8px; scrollbar-width:thin; }
-    .signal-dials a { flex:0 0 78px; }
+    .score-panel { width:100vw; margin-left:calc(50% - 50vw); padding:26px 16px 32px; color:#f0eee7; background:var(--ink); border-color:#46483f; --ink:#f0eee7; --paper:#151711; --line:#46483f; --muted:#d1d2ca; }
+    .signal-dials { grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px 22px; }
+    .signal-dials a { padding-block:9px 14px; }
     .scroll-cue { display:none; }
     .evidence { padding-block:85px; }
     .section-heading,.method > div,.about > div { grid-template-columns:1fr; gap:38px; }
@@ -387,7 +422,10 @@ const schema = {
     .cards { grid-template-columns:1fr; }
     .indicator.featured { grid-column:auto; }
     .indicator { padding:25px 20px 30px; }
-    .metric-row { grid-template-columns:1fr; gap:28px; }
+    .card-header { align-items:start; }
+    .card-meta { flex-direction:column; align-items:flex-end; gap:10px; }
+    .weight { padding:0 0 8px; border-right:0; border-bottom:1px solid var(--line); }
+    .metric-row { grid-template-columns:minmax(0,1fr) 150px; gap:18px; align-items:center; }
     .chart { height:130px; }
     .market-event em { writing-mode:vertical-rl; top:14px; }
     .method { padding-block:85px; }

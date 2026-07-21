@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Are We in a Bubble Yet?</title>
+    <link>https://areweinabubleyet.com/</link>
+    <description>Guides to stock market bubbles, valuation, leverage and investor behavior.</description>
+    <language>en</language>
+    <atom:link href="https://areweinabubleyet.com/feed.xml" rel="self" type="application/rss+xml" />
+    <item><title>How to spot a stock market bubble</title><link>https://areweinabubleyet.com/learn/how-to-spot-a-stock-market-bubble/</link><guid>https://areweinabubleyet.com/learn/how-to-spot-a-stock-market-bubble/</guid><description>The clearest signs of a stock market bubble, from stretched valuations and leverage to credit and complacency.</description></item>
+    <item><title>What is the Shiller CAPE ratio?</title><link>https://areweinabubleyet.com/learn/what-is-the-shiller-cape-ratio/</link><guid>https://areweinabubleyet.com/learn/what-is-the-shiller-cape-ratio/</guid><description>A plain-English guide to the Shiller CAPE ratio, its historical bubble signals and limits.</description></item>
+    <item><title>Margin debt and stock market bubbles</title><link>https://areweinabubleyet.com/learn/margin-debt-and-stock-market-bubbles/</link><guid>https://areweinabubleyet.com/learn/margin-debt-and-stock-market-bubbles/</guid><description>How FINRA margin debt can amplify bubbles, why its rate of change matters and what it cannot predict.</description></item>
+  </channel>
+</rss>

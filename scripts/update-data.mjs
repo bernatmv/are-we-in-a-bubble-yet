@@ -32,10 +32,16 @@ async function fred(seriesId) {
   }).filter((point) => Number.isFinite(point.value));
 }
 
-function annualHistory(points, transform = (value) => value) {
-  const years = new Map();
-  for (const point of points) years.set(Number(point.date.slice(0, 4)), [Number(point.date.slice(0, 4)), transform(point.value)]);
-  return [...years.values()].filter(([year]) => year >= 1997).slice(-30);
+function chartHistory(points, transform = (value) => value) {
+  const quarters = new Map();
+  for (const point of points) {
+    const date = new Date(`${point.date}T00:00:00Z`);
+    const year = date.getUTCFullYear();
+    const quarter = Math.floor(date.getUTCMonth() / 3);
+    const time = Number((year + quarter / 4).toFixed(2));
+    quarters.set(`${year}-${quarter}`, [time, transform(point.value)]);
+  }
+  return [...quarters.values()].filter(([time]) => time >= 1997).slice(-120);
 }
 
 async function updateFastSignals() {
@@ -50,7 +56,7 @@ async function updateFastSignals() {
     value: Number(vixLast.value.toFixed(1)), displayValue: vixLast.value.toFixed(1),
     change: vixLast.value < 14 ? 'Exceptionally quiet' : vixLast.value < 20 ? 'Quiet, but not euphoric' : 'Risk awareness is elevated',
     score: clamp((30 - vixLast.value) / 20 * 100), status: vixLast.value < 14 ? 'Complacent' : 'Neutral',
-    asOf: monthYear(vixLast.date), history: annualHistory(vixPoints, (v) => Number(v.toFixed(1)))
+    asOf: monthYear(vixLast.date), history: chartHistory(vixPoints, (v) => Number(v.toFixed(1)))
   });
   Object.assign(indicator('credit'), {
     name: 'Corporate credit spread', eyebrow: 'CREDIT · 12% WEIGHT',
@@ -59,14 +65,14 @@ async function updateFastSignals() {
     value: Number(creditLast.value.toFixed(2)), displayValue: `${creditLast.value.toFixed(1)}%`,
     change: creditLast.value < 1.8 ? 'Lenders are pricing in little risk' : 'Credit risk is being priced in',
     score: clamp((4.5 - creditLast.value) / 3 * 100), status: creditLast.value < 1.8 ? 'Complacent' : 'Neutral',
-    asOf: monthYear(creditLast.date), history: annualHistory(creditPoints, (v) => Number(v.toFixed(2)))
+    asOf: monthYear(creditLast.date), history: chartHistory(creditPoints, (v) => Number(v.toFixed(2)))
   });
   Object.assign(indicator('allocation'), {
     value: Number(allocationLast.value.toFixed(2)), displayValue: `${allocationLast.value.toFixed(1)}%`,
     change: 'Latest quarterly reading', score: clamp((allocationLast.value - 25) / 25 * 100),
     status: allocationLast.value >= 45 ? 'Extreme' : allocationLast.value >= 40 ? 'Elevated' : 'Neutral',
     asOf: `Q${Math.floor(new Date(allocationLast.date).getUTCMonth() / 3) + 1} ${allocationLast.date.slice(0, 4)}`,
-    history: annualHistory(allocationPoints, (value) => Number(value.toFixed(1)))
+    history: chartHistory(allocationPoints, (value) => Number(value.toFixed(1)))
   });
 }
 
@@ -82,7 +88,7 @@ async function updateBuffettIndicator() {
   Object.assign(indicator('buffett'), {
     value, displayValue: `${value}%`, change: 'Latest quarterly reading', score: clamp((value - 80) / 160 * 100),
     status: value >= 180 ? 'Extreme' : value >= 140 ? 'Elevated' : 'Neutral', asOf: `Q${Math.floor(new Date(last.date).getUTCMonth() / 3) + 1} ${last.date.slice(0, 4)}`,
-    history: annualHistory(ratios, (v) => Number(v.toFixed(0)))
+    history: chartHistory(ratios, (v) => Number(v.toFixed(0)))
   });
 }
 
@@ -98,7 +104,7 @@ async function updateCape() {
   Object.assign(indicator('cape'), {
     value, displayValue: `${value.toFixed(1)}×`, change: 'Latest monthly reading', score: clamp((value - 18) / 24 * 100),
     status: value >= 30 ? 'Extreme' : value >= 24 ? 'Elevated' : 'Neutral', asOf: monthYear(last.date),
-    history: annualHistory(points, (v) => Number(v.toFixed(1)))
+    history: chartHistory(points, (v) => Number(v.toFixed(1)))
   });
 }
 
@@ -113,10 +119,13 @@ async function updateMarginDebt() {
   const last = points.at(-1);
   const prior = points.findLast((point) => point.date <= `${Number(last.date.slice(0, 4)) - 1}-${last.date.slice(5)}`);
   const growth = prior ? (last.value / prior.value - 1) * 100 : 0;
+  const detailedHistory = chartHistory(points, (value) => Math.round(value));
+  const detailedStart = detailedHistory[0]?.[0] ?? Infinity;
+  const history = [...indicator('margin').history.filter(([time]) => time < detailedStart), ...detailedHistory].slice(-120);
   Object.assign(indicator('margin'), {
     value: Math.round(last.value), displayValue: `$${(last.value / 1_000_000).toFixed(2)}T`, change: `${growth >= 0 ? '+' : ''}${growth.toFixed(1)}% year over year`,
     score: clamp((growth + 10) / 50 * 100), status: growth >= 25 ? 'Extreme' : growth >= 12 ? 'Elevated' : 'Neutral', asOf: monthYear(last.date),
-    history: [...indicator('margin').history.filter(([year]) => year < Number(last.date.slice(0, 4))), [Number(last.date.slice(0, 4)), Math.round(last.value)]].slice(-30)
+    history
   });
 }
 

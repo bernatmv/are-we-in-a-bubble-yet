@@ -22,6 +22,7 @@ for (const indicator of data.indicators) {
   const start = Number(indicator.history[0]?.[0]);
   const end = Number(indicator.history.at(-1)?.[0]);
   if (start > 2000 || end < 2022) throw new Error(`${indicator.id} history does not span the reference crises`);
+  if (indicator.history.length < 30) throw new Error(`${indicator.id} needs at least 30 historical chart points`);
 }
 
 console.log(`Data model valid: ${data.verdict}, ${data.score}/100, ${data.confidence}% confidence; every series spans 2000–2022.`);
