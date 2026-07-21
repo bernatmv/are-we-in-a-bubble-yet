@@ -1,0 +1,590 @@
+{
+  "updatedAt": "2026-07-21T15:37:17.599Z",
+  "market": "United States equities",
+  "score": 91,
+  "verdict": "YES",
+  "summary": "Valuations and investor leverage are stretched. Credit and sentiment decide how close the signal sits to maximum alert.",
+  "indicators": [
+    {
+      "id": "cape",
+      "name": "Shiller CAPE",
+      "eyebrow": "VALUATION · 30% WEIGHT",
+      "value": 40.7,
+      "displayValue": "40.7×",
+      "change": "Latest monthly reading",
+      "score": 95,
+      "status": "Extreme",
+      "description": "Price divided by ten years of inflation-adjusted earnings. It smooths the business cycle to show what investors are paying for durable earning power.",
+      "threshold": "Bubble signal above 30×",
+      "source": "Shiller data via Multpl",
+      "sourceUrl": "https://www.multpl.com/shiller-pe/table/by-month",
+      "asOf": "Jul 2026",
+      "history": [
+        [
+          1997,
+          33
+        ],
+        [
+          1998,
+          38.8
+        ],
+        [
+          1999,
+          44.2
+        ],
+        [
+          2000,
+          37.3
+        ],
+        [
+          2001,
+          30.5
+        ],
+        [
+          2002,
+          23.1
+        ],
+        [
+          2003,
+          26.6
+        ],
+        [
+          2004,
+          27.1
+        ],
+        [
+          2005,
+          26.4
+        ],
+        [
+          2006,
+          27.3
+        ],
+        [
+          2007,
+          26
+        ],
+        [
+          2008,
+          15.4
+        ],
+        [
+          2009,
+          20.3
+        ],
+        [
+          2010,
+          22.4
+        ],
+        [
+          2011,
+          20.5
+        ],
+        [
+          2012,
+          21.2
+        ],
+        [
+          2013,
+          24.9
+        ],
+        [
+          2014,
+          26.8
+        ],
+        [
+          2015,
+          26
+        ],
+        [
+          2016,
+          27.9
+        ],
+        [
+          2017,
+          32.1
+        ],
+        [
+          2018,
+          28.3
+        ],
+        [
+          2019,
+          30.3
+        ],
+        [
+          2020,
+          33.8
+        ],
+        [
+          2021,
+          38.3
+        ],
+        [
+          2022,
+          28.3
+        ],
+        [
+          2023,
+          31.4
+        ],
+        [
+          2024,
+          37.7
+        ],
+        [
+          2025,
+          39.6
+        ],
+        [
+          2026,
+          40.7
+        ]
+      ]
+    },
+    {
+      "id": "buffett",
+      "name": "Market value / GDP",
+      "eyebrow": "VALUATION · 25% WEIGHT",
+      "value": 218,
+      "displayValue": "218%",
+      "change": "Latest quarterly reading",
+      "score": 86,
+      "status": "Extreme",
+      "description": "The value of US equities compared with annual economic output. It asks how much investors pay for each dollar the economy produces.",
+      "threshold": "Bubble signal above 180%",
+      "source": "Federal Reserve / FRED",
+      "sourceUrl": "https://fred.stlouisfed.org/",
+      "asOf": "Q1 2026",
+      "history": [
+        [
+          1997,
+          108
+        ],
+        [
+          1998,
+          128
+        ],
+        [
+          1999,
+          155
+        ],
+        [
+          2000,
+          128
+        ],
+        [
+          2001,
+          112
+        ],
+        [
+          2002,
+          84
+        ],
+        [
+          2003,
+          101
+        ],
+        [
+          2004,
+          108
+        ],
+        [
+          2005,
+          107
+        ],
+        [
+          2006,
+          114
+        ],
+        [
+          2007,
+          115
+        ],
+        [
+          2008,
+          76
+        ],
+        [
+          2009,
+          93
+        ],
+        [
+          2010,
+          102
+        ],
+        [
+          2011,
+          98
+        ],
+        [
+          2012,
+          106
+        ],
+        [
+          2013,
+          132
+        ],
+        [
+          2014,
+          141
+        ],
+        [
+          2015,
+          132
+        ],
+        [
+          2016,
+          135
+        ],
+        [
+          2017,
+          150
+        ],
+        [
+          2018,
+          134
+        ],
+        [
+          2019,
+          160
+        ],
+        [
+          2020,
+          198
+        ],
+        [
+          2021,
+          219
+        ],
+        [
+          2022,
+          157
+        ],
+        [
+          2023,
+          182
+        ],
+        [
+          2024,
+          210
+        ],
+        [
+          2025,
+          229
+        ],
+        [
+          2026,
+          218
+        ]
+      ]
+    },
+    {
+      "id": "margin",
+      "name": "Margin debt",
+      "eyebrow": "LEVERAGE · 25% WEIGHT",
+      "value": 1502072,
+      "displayValue": "$1.50T",
+      "change": "+49.0% year over year",
+      "score": 100,
+      "status": "Extreme",
+      "description": "Money borrowed by customers against securities. Rapid growth means more leverage is chasing the market—and more forced selling if prices reverse.",
+      "threshold": "High risk above 25% annual growth",
+      "source": "FINRA Margin Statistics",
+      "sourceUrl": "https://www.finra.org/rules-guidance/key-topics/margin-accounts/margin-statistics",
+      "asOf": "Jun 2026",
+      "history": [
+        [
+          1997,
+          131560
+        ],
+        [
+          1998,
+          148674
+        ],
+        [
+          1999,
+          241967
+        ],
+        [
+          2000,
+          210385
+        ],
+        [
+          2001,
+          160473
+        ],
+        [
+          2002,
+          139451
+        ],
+        [
+          2003,
+          181459
+        ],
+        [
+          2004,
+          217573
+        ],
+        [
+          2005,
+          244098
+        ],
+        [
+          2006,
+          303288
+        ],
+        [
+          2007,
+          355292
+        ],
+        [
+          2008,
+          210185
+        ],
+        [
+          2009,
+          262399
+        ],
+        [
+          2010,
+          313678
+        ],
+        [
+          2011,
+          301616
+        ],
+        [
+          2012,
+          355009
+        ],
+        [
+          2013,
+          478502
+        ],
+        [
+          2014,
+          495756
+        ],
+        [
+          2015,
+          503444
+        ],
+        [
+          2016,
+          529372
+        ],
+        [
+          2017,
+          642798
+        ],
+        [
+          2018,
+          554285
+        ],
+        [
+          2019,
+          579221
+        ],
+        [
+          2020,
+          778037
+        ],
+        [
+          2021,
+          910021
+        ],
+        [
+          2022,
+          606659
+        ],
+        [
+          2023,
+          700774
+        ],
+        [
+          2024,
+          899168
+        ],
+        [
+          2025,
+          1225597
+        ],
+        [
+          2026,
+          1502072
+        ]
+      ]
+    },
+    {
+      "id": "credit",
+      "name": "High-yield spread",
+      "eyebrow": "CREDIT · 12% WEIGHT",
+      "value": 2.69,
+      "displayValue": "2.7%",
+      "change": "Lenders are pricing in little risk",
+      "score": 95,
+      "status": "Complacent",
+      "description": "The extra yield demanded from lower-quality US companies. Very tight spreads suggest lenders see little risk and can signal late-cycle complacency.",
+      "threshold": "Complacency below 3.25%",
+      "source": "ICE BofA via FRED",
+      "sourceUrl": "https://fred.stlouisfed.org/series/BAMLH0A0HYM2",
+      "asOf": "Jul 2026",
+      "history": [
+        [
+          2023,
+          3.39
+        ],
+        [
+          2024,
+          2.92
+        ],
+        [
+          2025,
+          2.81
+        ],
+        [
+          2026,
+          2.69
+        ]
+      ]
+    },
+    {
+      "id": "vix",
+      "name": "Market volatility",
+      "eyebrow": "SENTIMENT · 8% WEIGHT",
+      "value": 18.6,
+      "displayValue": "18.6",
+      "change": "Quiet, but not euphoric",
+      "score": 57,
+      "status": "Neutral",
+      "description": "The VIX reflects expected near-term S&P 500 volatility. Low readings imply confidence; exceptionally low readings can reveal investor complacency.",
+      "threshold": "Complacency below 14",
+      "source": "Cboe via FRED",
+      "sourceUrl": "https://fred.stlouisfed.org/series/VIXCLS",
+      "asOf": "Jul 2026",
+      "history": [
+        [
+          1997,
+          24
+        ],
+        [
+          1998,
+          24.4
+        ],
+        [
+          1999,
+          24.6
+        ],
+        [
+          2000,
+          26.9
+        ],
+        [
+          2001,
+          23.8
+        ],
+        [
+          2002,
+          28.6
+        ],
+        [
+          2003,
+          18.3
+        ],
+        [
+          2004,
+          13.3
+        ],
+        [
+          2005,
+          12.1
+        ],
+        [
+          2006,
+          11.6
+        ],
+        [
+          2007,
+          22.5
+        ],
+        [
+          2008,
+          40
+        ],
+        [
+          2009,
+          21.7
+        ],
+        [
+          2010,
+          17.8
+        ],
+        [
+          2011,
+          23.4
+        ],
+        [
+          2012,
+          18
+        ],
+        [
+          2013,
+          13.7
+        ],
+        [
+          2014,
+          19.2
+        ],
+        [
+          2015,
+          18.2
+        ],
+        [
+          2016,
+          14
+        ],
+        [
+          2017,
+          11
+        ],
+        [
+          2018,
+          25.4
+        ],
+        [
+          2019,
+          13.8
+        ],
+        [
+          2020,
+          22.8
+        ],
+        [
+          2021,
+          17.2
+        ],
+        [
+          2022,
+          21.7
+        ],
+        [
+          2023,
+          12.4
+        ],
+        [
+          2024,
+          17.4
+        ],
+        [
+          2025,
+          14.9
+        ],
+        [
+          2026,
+          18.6
+        ]
+      ]
+    }
+  ]
+}

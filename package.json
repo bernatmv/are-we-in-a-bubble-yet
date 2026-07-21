@@ -1,0 +1,18 @@
+{
+  "name": "are-we-in-a-bubble-yet",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "vercel-build": "npm run update-data && npm run build",
+    "preview": "astro preview",
+    "update-data": "node scripts/update-data.mjs"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "astro": "^7.1.3",
+    "typescript": "^5.8.3"
+  }
+}
