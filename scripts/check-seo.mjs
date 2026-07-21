@@ -61,6 +61,19 @@ for (const [file, lang, canonical] of articlePages) {
   assert(content(html, 'property', 'og:type') === 'article', `${file}: missing article Open Graph type`);
   assert(content(html, 'name', 'twitter:card') === 'summary_large_image', `${file}: missing X card`);
   assert(html.includes('G-YQYRE594D9'), `${file}: missing Google Analytics`);
+  const jsonLd = html.match(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/)?.[1];
+  assert(jsonLd, `${file}: missing JSON-LD`);
+  const graph = JSON.parse(jsonLd);
+  assert(graph['@graph']?.some((item) => item['@type'] === 'BreadcrumbList'), `${file}: missing breadcrumb schema`);
 }
+
+const robots = await readFile(resolve('dist/robots.txt'), 'utf8');
+const sitemap = await readFile(resolve('dist/sitemap.xml'), 'utf8');
+const feed = await readFile(resolve('dist/feed.xml'), 'utf8');
+assert(robots.includes('Sitemap: https://areweinabubleyet.com/sitemap.xml'), 'robots.txt must advertise the sitemap');
+for (const [, , canonical] of [...pages.map((page) => [page.file, page.lang, page.canonical]), ...articlePages]) {
+  assert(sitemap.includes(`<loc>${canonical}</loc>`), `sitemap is missing ${canonical}`);
+}
+assert(feed.includes('<rss version="2.0"') && feed.includes('<item>'), 'RSS feed is missing or invalid');
 
 console.log(`SEO checks passed for both dashboards and ${articlePages.length} localized article pages.`);
