@@ -19,17 +19,42 @@ const canonical = new URL(c.path, site).href;
 
 const colors = { Extreme: '#ff4d2e', Elevated: '#d7a329', Complacent: '#df7b17', Neutral: '#526656' };
 
-function chartGeometry(history: readonly (readonly number[])[]) {
+const chartScales = {
+  cape: { min: 0, mid: 25, max: 50 },
+  buffett: { min: 0, mid: 125, max: 250 },
+  margin: { min: 0, mid: 800000, max: 1600000 },
+  allocation: { min: 0, mid: 25, max: 50 },
+  credit: { min: 0, mid: 3, max: 6 },
+  vix: { min: 0, mid: 30, max: 60 }
+} as const;
+
+function formatChartValue(id: string, value: number) {
+  const decimal = (places = 1) => new Intl.NumberFormat(localeMeta[locale].intl, {
+    minimumFractionDigits: places,
+    maximumFractionDigits: places
+  }).format(value);
+  if (id === 'cape') return `${decimal()}×`;
+  if (id === 'margin') return value === 0 ? '$0' : `$${decimal()}T`;
+  if (['buffett', 'allocation', 'credit'].includes(id)) return `${decimal(value % 1 ? 1 : 0)}%`;
+  return decimal(value % 1 ? 1 : 0);
+}
+
+function formatHistoryDate(time: number) {
+  const year = Math.floor(time);
+  const month = Math.min(11, Math.max(0, Math.round((time - year) * 12)));
+  return new Intl.DateTimeFormat(localeMeta[locale].intl, { month: 'short', year: 'numeric', timeZone: 'UTC' })
+    .format(new Date(Date.UTC(year, month, 1)));
+}
+
+function chartGeometry(history: readonly (readonly number[])[], scale: { min: number; mid: number; max: number }) {
   const values = history.map((point) => Number(point[1]));
   const times = history.map((point) => Number(point[0]));
-  const min = Math.min(...values);
-  const max = Math.max(...values);
   const start = Math.min(...times);
   const end = Math.max(...times);
   const points = values.map((value, index) => {
     const x = ((times[index] - start) / Math.max(end - start, 1)) * 100;
-    const y = 36 - ((value - min) / Math.max(max - min, 1)) * 30;
-    return { x, y };
+    const y = 36 - ((value - scale.min) / Math.max(scale.max - scale.min, 1)) * 30;
+    return { x, y, value, time: times[index] };
   });
   let line = `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
   for (let index = 0; index < points.length - 1; index++) {
@@ -41,7 +66,7 @@ function chartGeometry(history: readonly (readonly number[])[]) {
     const control2 = { x: next.x - (after.x - current.x) / 6, y: next.y - (after.y - current.y) / 6 };
     line += ` C ${control1.x.toFixed(2)} ${control1.y.toFixed(2)}, ${control2.x.toFixed(2)} ${control2.y.toFixed(2)}, ${next.x.toFixed(2)} ${next.y.toFixed(2)}`;
   }
-  return { line, area: `${line} L 100 36 L 0 36 Z`, last: points.at(-1), start, end };
+  return { line, area: `${line} L 100 36 L 0 36 Z`, points, last: points.at(-1), start, end };
 }
 
 const updated = new Intl.DateTimeFormat(localeMeta[locale].intl, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(data.updatedAt));
@@ -198,11 +223,18 @@ const schema = {
         <div class="cards">
           {orderedIndicators.map((rawIndicator, index) => {
             const indicator = localizedIndicator(rawIndicator);
-            const chart = chartGeometry(indicator.history);
+            const scale = chartScales[indicator.id as keyof typeof chartScales];
+            const chart = chartGeometry(indicator.history, scale);
             const visibleEvents = marketEvents.filter((event) => event.time >= chart.start && chart.end >= event.time)
               .map((event) => ({ ...event, position: ((event.time - chart.start) / Math.max(chart.end - chart.start, 1)) * 100 }));
             const category = indicator.eyebrow.split('·')[0].trim();
             const weight = indicator.eyebrow.match(/\d+%/)?.[0];
+            const inspectionPoints = chart.points.map((point) => ({
+              x: point.x,
+              y: point.y,
+              value: formatChartValue(indicator.id, indicator.id === 'margin' ? point.value / 1000000 : point.value),
+              date: formatHistoryDate(point.time)
+            }));
             return (
             <article id={`signal-${indicator.id}`} class:list={['indicator', index === 0 && 'featured']} style={`--signal:${colors[rawIndicator.status as keyof typeof colors] ?? '#526656'}`}>
               <div class="card-header">
@@ -226,7 +258,13 @@ const schema = {
               </div>
 
               <div class="chart-wrap">
-                <div class="chart-plot">
+                <div
+                  class="chart-plot"
+                  tabindex="0"
+                  aria-label={`${indicator.name} historical trend. Use arrow keys to inspect values.`}
+                  data-points={JSON.stringify(inspectionPoints)}
+                >
+                  <div class="chart-canvas">
                   <svg class="chart" viewBox="0 0 100 40" preserveAspectRatio="none" role="img" aria-label={`${indicator.name} historical trend`}>
                     <defs>
                       <pattern id={`dither-${indicator.id}`} width="1" height="1.8" patternUnits="userSpaceOnUse">
@@ -247,6 +285,14 @@ const schema = {
                         <b>{event.year}</b><em>{event.label}</em>
                       </span>
                     ))}
+                  </div>
+                  <div class="chart-crosshair" aria-hidden="true"></div>
+                  <output class="chart-tooltip" aria-live="polite"><b></b><span></span></output>
+                  </div>
+                  <div class="y-axis" aria-hidden="true">
+                    <span>{formatChartValue(indicator.id, indicator.id === 'margin' ? scale.max / 1000000 : scale.max)}</span>
+                    <span>{formatChartValue(indicator.id, indicator.id === 'margin' ? scale.mid / 1000000 : scale.mid)}</span>
+                    <span>{formatChartValue(indicator.id, indicator.id === 'margin' ? scale.min / 1000000 : scale.min)}</span>
                   </div>
                 </div>
                 <div class="chart-years"><span>{Math.floor(chart.start)}</span><span>{c.trend}</span><span>{Math.floor(chart.end)}</span></div>
@@ -300,6 +346,61 @@ const schema = {
         <span>© {new Date().getUTCFullYear()} · {c.freshness}</span>
       </div>
     </footer>
+    <script>
+      type InspectionPoint = { x: number; y: number; value: string; date: string };
+
+      document.querySelectorAll<HTMLElement>('.chart-plot[data-points]').forEach((plot) => {
+        const canvas = plot.querySelector<HTMLElement>('.chart-canvas');
+        const crosshair = plot.querySelector<HTMLElement>('.chart-crosshair');
+        const tooltip = plot.querySelector<HTMLOutputElement>('.chart-tooltip');
+        const tooltipValue = tooltip?.querySelector<HTMLElement>('b');
+        const tooltipDate = tooltip?.querySelector<HTMLElement>('span');
+        const points = JSON.parse(plot.dataset.points ?? '[]') as InspectionPoint[];
+        let activeIndex = Math.max(0, points.length - 1);
+
+        if (!canvas || !crosshair || !tooltip || !tooltipValue || !tooltipDate || points.length === 0) return;
+
+        const showPoint = (index: number) => {
+          activeIndex = Math.max(0, Math.min(points.length - 1, index));
+          const point = points[activeIndex];
+          const top = (point.y / 40) * 100;
+          plot.classList.add('inspecting');
+          crosshair.style.left = `${point.x}%`;
+          crosshair.style.setProperty('--point-y', `${Math.max(0, Math.min(100, ((point.y - 6) / 30) * 100))}%`);
+          tooltip.style.left = `${point.x}%`;
+          tooltip.style.top = `${top}%`;
+          tooltip.classList.toggle('align-right', point.x > 72);
+          tooltipValue.textContent = point.value;
+          tooltipDate.textContent = point.date;
+        };
+
+        const inspectPointer = (event: PointerEvent) => {
+          const bounds = canvas.getBoundingClientRect();
+          const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width)) * 100;
+          let nearest = 0;
+          for (let index = 1; index < points.length; index++) {
+            if (Math.abs(points[index].x - x) < Math.abs(points[nearest].x - x)) nearest = index;
+          }
+          showPoint(nearest);
+        };
+
+        canvas.addEventListener('pointermove', inspectPointer);
+        canvas.addEventListener('pointerdown', inspectPointer);
+        canvas.addEventListener('pointerleave', () => {
+          if (document.activeElement !== plot) plot.classList.remove('inspecting');
+        });
+        plot.addEventListener('focus', () => showPoint(activeIndex));
+        plot.addEventListener('blur', () => plot.classList.remove('inspecting'));
+        plot.addEventListener('keydown', (event) => {
+          if (!['ArrowLeft', 'ArrowRight', 'Home', 'End', 'Escape'].includes(event.key)) return;
+          event.preventDefault();
+          if (event.key === 'Escape') return plot.classList.remove('inspecting');
+          if (event.key === 'Home') return showPoint(0);
+          if (event.key === 'End') return showPoint(points.length - 1);
+          showPoint(activeIndex + (event.key === 'ArrowRight' ? 1 : -1));
+        });
+      });
+    </script>
   </body>
 </html>
 
@@ -362,7 +463,9 @@ const schema = {
   .metric-row strong { display:block; font:400 clamp(64px, 7vw, 106px)/.8 'Instrument Serif', serif; letter-spacing:-.055em; }
   .metric-row > div > span { display:block; margin-top:15px; color:var(--muted); font-size:12px; }
   .chart-wrap { border-top:1px solid var(--line); padding-top:18px; }
-  .chart-plot { position:relative; }
+  .chart-plot { position:relative; padding-right:44px; outline:none; }
+  .chart-plot:focus-visible { outline:1px solid var(--signal); outline-offset:7px; }
+  .chart-canvas { position:relative; min-width:0; cursor:crosshair; }
   .chart { display:block; width:100%; height:180px; overflow:visible; }
   .chart line { stroke:var(--line); stroke-width:.25; stroke-dasharray:1 2; }
   .chart-area { opacity:.48; }
@@ -373,6 +476,14 @@ const schema = {
   .market-event b,.market-event em { position:absolute; left:5px; white-space:nowrap; font:500 7px 'DM Mono',monospace; letter-spacing:.06em; }
   .market-event b { top:2px; color:var(--ink); }
   .market-event em { top:14px; color:var(--muted); font-style:normal; text-transform:uppercase; }
+  .y-axis { position:absolute; top:15%; right:0; bottom:10%; width:36px; display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; color:var(--muted); font:500 8px 'DM Mono',monospace; letter-spacing:.02em; }
+  .chart-crosshair { position:absolute; z-index:6; top:15%; bottom:10%; left:0; display:none; border-left:1px solid color-mix(in srgb,var(--ink) 42%,transparent); pointer-events:none; }
+  .chart-crosshair::after { content:''; position:absolute; left:-3px; top:var(--point-y,50%); width:5px; height:5px; transform:translateY(-50%); border-radius:50%; background:var(--ink); box-shadow:0 0 0 2px var(--paper); }
+  .chart-tooltip { position:absolute; z-index:7; left:0; top:0; display:none; min-width:92px; transform:translate(9px,calc(-100% - 8px)); padding:6px 8px; color:var(--paper); background:var(--ink); box-shadow:4px 4px 0 color-mix(in srgb,var(--ink) 14%,transparent); font:400 8px/1.4 'DM Mono',monospace; pointer-events:none; }
+  .chart-tooltip.align-right { transform:translate(calc(-100% - 9px),calc(-100% - 8px)); }
+  .chart-tooltip b { display:block; color:var(--signal); font-size:10px; }
+  .chart-tooltip span { white-space:nowrap; }
+  .chart-plot.inspecting .chart-crosshair,.chart-plot.inspecting .chart-tooltip { display:block; }
   .chart-years { display:flex; justify-content:space-between; color:var(--muted); font:400 8px 'DM Mono', monospace; letter-spacing:.09em; }
   .description { max-width:720px; margin:32px 0; color:#44473f; font-size:14px; line-height:1.7; }
   .card-footer { display:flex; justify-content:space-between; align-items:end; gap:20px; border-top:1px solid var(--line); padding-top:17px; font:500 9px 'DM Mono', monospace; letter-spacing:.06em; }
@@ -426,7 +537,9 @@ const schema = {
     .weight { padding:0 0 8px; border-right:0; border-bottom:1px solid var(--line); }
     .metric-row { grid-template-columns:minmax(0,1fr) 150px; gap:18px; align-items:center; }
     .chart { height:130px; }
-    .market-event em { writing-mode:vertical-rl; top:14px; }
+    .chart-plot { padding-right:38px; }
+    .y-axis { width:31px; font-size:7px; }
+    .market-event b,.market-event em { display:none; }
     .method { padding-block:85px; }
     .method-copy,.about-copy { grid-template-columns:1fr; }
     .about { padding-block:85px; }
