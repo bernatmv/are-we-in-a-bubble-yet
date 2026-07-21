@@ -73,6 +73,34 @@ export const articles = [
         ['Léela junto a la valoración', 'La deuda de margen no es una señal de venta independiente. El apalancamiento preocupa más cuando la valoración ya está tensionada y prestamistas e inversores siguen demasiado tranquilos ante el riesgo.']
       ]
     }
+  },
+  {
+    id: 'methodology',
+    slug: { en: 'how-our-bubble-indicator-works', es: 'como-funciona-el-indicador-de-burbuja' },
+    en: {
+      kicker: 'METHODOLOGY', title: 'How our bubble indicator works',
+      description: 'See how our stock market bubble indicator combines six signals, why valuation and leverage come first, and what each weight contributes.',
+      intro: 'The indicator is a structured argument, not a forecast. It asks whether expensive prices, leverage and confident risk-taking are appearing together—and makes every judgment visible.',
+      sections: [
+        ['From six readings to one score', 'Each signal is clamped to a 0–100 pressure score using a fixed range: CAPE 18–42, market value to GDP 80–240%, margin-debt growth −10–40%, household equity allocation 25–50%, credit spreads 4.5–1.5% and VIX 30–10. The last two run in reverse because lower readings imply more complacency. We multiply those scores by their weights and add them. The composite becomes NO below 30, NOT YET at 30, MAYBE at 45, PROBABLY at 60 and YES at 75.'],
+        ['First priority: valuation · 45%', 'Valuation gets the largest share because detachment from economic fundamentals is the defining ingredient of a bubble. Shiller CAPE receives 25% and market value to GDP 20%. CAPE compares prices with smoothed earning power; market value to GDP compares the whole market with the economy supporting it. Using both keeps one valuation lens from deciding the verdict alone.'],
+        ['Second priority: leverage · 25%', 'Margin debt receives 25%, equal to the largest single valuation signal. Borrowing does more than accompany optimism: it can amplify demand on the way up and force selling when collateral falls. We score its year-over-year growth rather than its dollar level, because the level naturally rises as markets and the economy grow.'],
+        ['Confirmation signals · 30%', 'The remaining signals test whether the enthusiasm is broad. Credit spreads receive 12% because lenders provide an independent market price for risk. Household equity allocation receives 10% because crowded ownership leaves less uncommitted buying power. The VIX receives 8%, the smallest weight, because short-term calm can be useful confirmation but is noisy and can reverse quickly.'],
+        ['Why the weights are not probabilities', 'The weights express priority, not the chance of a crash: 25% does not mean a signal predicts one quarter of market outcomes. Slow-moving fundamentals and leverage carry 70% so a fleeting mood cannot dominate the result. A separate confidence measure checks how closely the six signals agree and how far the composite sits from the next decision boundary. Read the score as a transparent temperature check, never as a market-timing rule.']
+      ]
+    },
+    es: {
+      kicker: 'METODOLOGÍA', title: 'Cómo funciona el indicador de burbuja',
+      description: 'Descubre cómo nuestro indicador de burbuja bursátil combina seis señales, por qué prioriza valoración y apalancamiento y qué aporta cada peso.',
+      intro: 'El indicador es un argumento estructurado, no una predicción. Pregunta si los precios caros, el apalancamiento y la confianza ante el riesgo aparecen a la vez, y deja cada decisión a la vista.',
+      sections: [
+        ['De seis lecturas a una puntuación', 'Cada señal se limita a una puntuación de presión de 0 a 100 con un rango fijo: CAPE 18–42, valor de mercado/PIB 80–240%, crecimiento de la deuda de margen −10–40%, asignación familiar a bolsa 25–50%, diferenciales de crédito 4,5–1,5% y VIX 30–10. Los dos últimos se invierten porque una lectura menor implica más complacencia. Multiplicamos las puntuaciones por sus pesos y las sumamos. El índice dice NO por debajo de 30, TODAVÍA NO desde 30, QUIZÁ desde 45, PROBABLEMENTE desde 60 y SÍ desde 75.'],
+        ['Primera prioridad: valoración · 45%', 'La valoración recibe el mayor peso porque la separación respecto a los fundamentos económicos es el ingrediente esencial de una burbuja. El CAPE de Shiller aporta un 25% y el valor de mercado frente al PIB un 20%. El CAPE compara precios con beneficios suavizados; el segundo compara todo el mercado con la economía que lo sostiene. Usar ambos evita que una sola perspectiva decida el resultado.'],
+        ['Segunda prioridad: apalancamiento · 25%', 'La deuda de margen aporta un 25%, igual que la mayor señal de valoración. El crédito no solo acompaña al optimismo: puede amplificar la demanda durante la subida y forzar ventas cuando cae el valor del colateral. Medimos su crecimiento interanual, no el nivel en dólares, porque ese nivel aumenta de forma natural con el mercado y la economía.'],
+        ['Señales de confirmación · 30%', 'Las señales restantes comprueban si el entusiasmo es amplio. Los diferenciales de crédito pesan un 12% porque los prestamistas aportan un precio del riesgo independiente. La asignación familiar a bolsa pesa un 10% porque un posicionamiento saturado deja menos compradores disponibles. El VIX pesa un 8%, el mínimo, porque la calma a corto plazo confirma el contexto, pero es ruidosa y puede cambiar rápido.'],
+        ['Los pesos no son probabilidades', 'Los pesos expresan prioridad, no la probabilidad de una caída: un 25% no significa que una señal explique la cuarta parte de los resultados del mercado. Los fundamentales lentos y el apalancamiento suman un 70% para que un cambio fugaz de ánimo no domine el índice. Una medida de confianza separada evalúa cuánto coinciden las seis señales y a qué distancia está el resultado del siguiente umbral. Léelo como un termómetro transparente, nunca como una regla para anticipar el mercado.']
+      ]
+    }
   }
 ] as const;
 

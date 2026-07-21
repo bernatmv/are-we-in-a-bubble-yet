@@ -16,9 +16,11 @@ const articlePages = [
   ['dist/learn/how-to-spot-a-stock-market-bubble/index.html', 'en', 'https://areweinabubleyet.com/learn/how-to-spot-a-stock-market-bubble/'],
   ['dist/learn/what-is-the-shiller-cape-ratio/index.html', 'en', 'https://areweinabubleyet.com/learn/what-is-the-shiller-cape-ratio/'],
   ['dist/learn/margin-debt-and-stock-market-bubbles/index.html', 'en', 'https://areweinabubleyet.com/learn/margin-debt-and-stock-market-bubbles/'],
+  ['dist/learn/how-our-bubble-indicator-works/index.html', 'en', 'https://areweinabubleyet.com/learn/how-our-bubble-indicator-works/'],
   ['dist/es/aprender/como-detectar-una-burbuja-bursatil/index.html', 'es', 'https://areweinabubleyet.com/es/aprender/como-detectar-una-burbuja-bursatil/'],
   ['dist/es/aprender/que-es-el-ratio-cape-de-shiller/index.html', 'es', 'https://areweinabubleyet.com/es/aprender/que-es-el-ratio-cape-de-shiller/'],
-  ['dist/es/aprender/deuda-de-margen-y-burbujas-bursatiles/index.html', 'es', 'https://areweinabubleyet.com/es/aprender/deuda-de-margen-y-burbujas-bursatiles/']
+  ['dist/es/aprender/deuda-de-margen-y-burbujas-bursatiles/index.html', 'es', 'https://areweinabubleyet.com/es/aprender/deuda-de-margen-y-burbujas-bursatiles/'],
+  ['dist/es/aprender/como-funciona-el-indicador-de-burbuja/index.html', 'es', 'https://areweinabubleyet.com/es/aprender/como-funciona-el-indicador-de-burbuja/']
 ];
 
 function assert(condition, message) {
