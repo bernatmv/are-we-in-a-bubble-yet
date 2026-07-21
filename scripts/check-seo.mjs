@@ -4,8 +4,14 @@ import sharp from 'sharp';
 
 const pages = [
   { file: 'dist/index.html', lang: 'en', canonical: 'https://areweinabubleyet.com/', image: 'og-en.png' },
-  { file: 'dist/es/index.html', lang: 'es', canonical: 'https://areweinabubleyet.com/es/', image: 'og-es.png' }
+  { file: 'dist/es/index.html', lang: 'es', canonical: 'https://areweinabubleyet.com/es/', image: 'og-es.png' },
+  { file: 'dist/ca/index.html', lang: 'ca', canonical: 'https://areweinabubleyet.com/ca/', image: 'og-en.png' },
+  { file: 'dist/de/index.html', lang: 'de', canonical: 'https://areweinabubleyet.com/de/', image: 'og-en.png' },
+  { file: 'dist/fr/index.html', lang: 'fr', canonical: 'https://areweinabubleyet.com/fr/', image: 'og-en.png' },
+  { file: 'dist/it/index.html', lang: 'it', canonical: 'https://areweinabubleyet.com/it/', image: 'og-en.png' },
+  { file: 'dist/ja/index.html', lang: 'ja', canonical: 'https://areweinabubleyet.com/ja/', image: 'og-en.png' }
 ];
+const dashboardLanguages = ['en', 'es', 'ca', 'de', 'fr', 'it', 'ja'];
 const articlePages = [
   ['dist/learn/how-to-spot-a-stock-market-bubble/index.html', 'en', 'https://areweinabubleyet.com/learn/how-to-spot-a-stock-market-bubble/'],
   ['dist/learn/what-is-the-shiller-cape-ratio/index.html', 'en', 'https://areweinabubleyet.com/learn/what-is-the-shiller-cape-ratio/'],
@@ -32,10 +38,10 @@ for (const page of pages) {
   const jsonLd = html.match(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/)?.[1];
 
   assert(html.includes(`<html lang="${page.lang}">`), `${page.lang}: missing document language`);
-  assert(title.length >= 40 && title.length <= 65, `${page.lang}: title length is ${title.length}`);
-  assert(description.length >= 120 && description.length <= 170, `${page.lang}: description length is ${description.length}`);
+  assert(page.lang === 'ja' ? title.length >= 15 && title.length <= 40 : title.length >= 35 && title.length <= 75, `${page.lang}: title length is ${title.length}`);
+  assert(page.lang === 'ja' ? description.length >= 40 && description.length <= 100 : description.length >= 100 && description.length <= 180, `${page.lang}: description length is ${description.length}`);
   assert(html.includes(`rel="canonical" href="${page.canonical}"`), `${page.lang}: canonical URL is incorrect`);
-  assert(html.includes('hreflang="en"') && html.includes('hreflang="es"') && html.includes('hreflang="x-default"'), `${page.lang}: incomplete hreflang set`);
+  assert(dashboardLanguages.every((lang) => html.includes(`hreflang="${lang}"`)) && html.includes('hreflang="x-default"'), `${page.lang}: incomplete hreflang set`);
   assert(content(html, 'property', 'og:image')?.startsWith('https://'), `${page.lang}: missing absolute Open Graph image`);
   assert(content(html, 'name', 'twitter:card') === 'summary_large_image', `${page.lang}: missing X large-image card`);
   assert(html.includes('<h1 id="verdict-title">'), `${page.lang}: missing primary heading`);
@@ -48,6 +54,7 @@ for (const page of pages) {
   assert(image.width === 1200 && image.height === 630, `${page.lang}: social image must be 1200×630`);
   console.log(`${page.lang.toUpperCase()}: ${title.length}-character title, ${description.length}-character description, metadata valid`);
 }
+assert((await readFile(resolve('dist/index.html'), 'utf8')).includes('navigator.languages'), 'English root must include browser-language detection');
 
 for (const [file, lang, canonical] of articlePages) {
   const html = await readFile(resolve(file), 'utf8');
@@ -74,6 +81,7 @@ assert(robots.includes('Sitemap: https://areweinabubleyet.com/sitemap.xml'), 'ro
 for (const [, , canonical] of [...pages.map((page) => [page.file, page.lang, page.canonical]), ...articlePages]) {
   assert(sitemap.includes(`<loc>${canonical}</loc>`), `sitemap is missing ${canonical}`);
 }
+for (const lang of dashboardLanguages) assert(sitemap.includes(`hreflang="${lang}"`), `sitemap is missing ${lang} dashboard alternates`);
 assert(feed.includes('<rss version="2.0"') && feed.includes('<item>'), 'RSS feed is missing or invalid');
 
-console.log(`SEO checks passed for both dashboards and ${articlePages.length} localized article pages.`);
+console.log(`SEO checks passed for ${pages.length} dashboards and ${articlePages.length} localized article pages.`);

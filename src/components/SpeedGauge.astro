@@ -46,7 +46,7 @@ const ticks = [0, 25, 50, 75, 100].map((value) => {
 
 <style>
   .speed-gauge { position:relative; width:190px; padding-top:26px; color:var(--ink); }
-  .gauge-score { position:absolute; top:0; right:0; color:var(--risk); font:400 30px/1 'Instrument Serif',serif; letter-spacing:-.03em; }
+  .gauge-score { position:absolute; top:0; right:0; color:var(--risk); font:500 21px/1 'DM Mono',monospace; letter-spacing:-.06em; }
   svg { display:block; width:100%; overflow:visible; }
   .gauge-base,.gauge-color { fill:none; stroke-width:7; stroke-linecap:round; }
   .gauge-base { stroke:#d8d6cd; }
@@ -55,15 +55,15 @@ const ticks = [0, 25, 50, 75, 100].map((value) => {
   .pin { fill:var(--ink); }
   .pin-core { fill:var(--risk); }
   text { fill:var(--muted); font:500 7px 'DM Mono',monospace; }
-  .gauge-name { display:block; margin-top:7px; color:var(--muted); font:500 8px/1.35 'DM Mono',monospace; letter-spacing:.04em; text-transform:uppercase; }
+  .gauge-name { display:block; margin-top:7px; color:var(--muted); font:500 9px/1.4 'DM Mono',monospace; letter-spacing:.035em; text-transform:uppercase; }
   .compact { width:100%; min-width:58px; padding-top:21px; }
-  .compact .gauge-score { font-size:23px; }
-  .compact .gauge-name { min-height:24px; font-size:8px; }
+  .compact .gauge-score { font-size:18px; }
+  .compact .gauge-name { min-height:26px; font-size:8.5px; }
   .compact .gauge-base,.compact .gauge-color { stroke-width:8; }
   .compact .zero,.compact .hundred { display:none; }
   @media (max-width:800px) {
     .speed-gauge:not(.compact) { width:150px; padding-top:28px; }
-    .speed-gauge:not(.compact) .gauge-score { font-size:34px; }
-    .compact .gauge-name { font-size:7.5px; }
+    .speed-gauge:not(.compact) .gauge-score { font-size:22px; }
+    .compact .gauge-name { font-size:8.5px; }
   }
 </style>

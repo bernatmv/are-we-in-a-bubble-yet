@@ -1,8 +1,9 @@
 ---
 import Analytics from '../components/Analytics.astro';
 import BrandMark from '../components/BrandMark.astro';
-import { articleAlternatePath, articlePath, articles } from '../articles';
-import { copy, type Locale } from '../i18n';
+import LanguageSelector from '../components/LanguageSelector.astro';
+import { articleAlternatePath, articlePath, articles, type ArticleLocale } from '../articles';
+import { copy } from '../i18n';
 
 export function getStaticPaths() {
   return articles.flatMap((article) => ([
@@ -11,7 +12,7 @@ export function getStaticPaths() {
   ]));
 }
 
-const { article, locale } = Astro.props as { article: typeof articles[number], locale: Locale };
+const { article, locale } = Astro.props as { article: typeof articles[number], locale: ArticleLocale };
 const c = copy[locale];
 const content = article[locale];
 const site = 'https://areweinabubleyet.com';
@@ -69,7 +70,7 @@ const schema = {
   <body>
     <header class="wrap">
       <a class="wordmark" href={c.path}><BrandMark />{c.wordmark}</a>
-      <a class="language" href={articleAlternatePath(article, locale)}>{c.otherLabel}</a>
+      <LanguageSelector locale={locale} />
     </header>
     <main class="wrap">
       <article>
@@ -100,7 +101,6 @@ const schema = {
   .wrap { width:min(1120px,calc(100% - 64px)); margin:auto; }
   header { height:78px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
   .wordmark { display:flex; align-items:center; gap:11px; text-decoration:none; font:500 11px 'DM Mono',monospace; letter-spacing:.08em; }
-  .language { display:grid; place-items:center; width:32px; height:32px; border:1px solid var(--line); border-radius:50%; text-decoration:none; font:500 9px 'DM Mono',monospace; }
   main { display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:100px; padding-block:100px 130px; }
   .kicker { margin:0; font:500 10px 'DM Mono',monospace; letter-spacing:.14em; }
   .kicker::before { content:'— '; color:var(--risk); }

@@ -1,4 +1,5 @@
 import type { Locale } from './i18n';
+export type ArticleLocale = 'en' | 'es';
 
 export const articles = [
   {
@@ -79,6 +80,6 @@ export function articlePath(article: typeof articles[number], locale: Locale) {
   return locale === 'es' ? `/es/aprender/${article.slug.es}/` : `/learn/${article.slug.en}/`;
 }
 
-export function articleAlternatePath(article: typeof articles[number], locale: Locale) {
+export function articleAlternatePath(article: typeof articles[number], locale: ArticleLocale) {
   return articlePath(article, locale === 'en' ? 'es' : 'en');
 }
