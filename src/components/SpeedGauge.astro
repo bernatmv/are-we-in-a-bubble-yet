@@ -7,39 +7,34 @@ interface Props {
   compact?: boolean;
 }
 
-const { id, score, label, name, compact = false } = Astro.props;
+const { score, label, name, compact = false } = Astro.props;
 const safeScore = Math.max(0, Math.min(100, score));
 const needleAngle = -180 + safeScore * 1.8;
-const ticks = [0, 25, 50, 75, 100].map((value) => {
-  const angle = Math.PI - (value / 100) * Math.PI;
-  return {
-    value,
-    x1: 60 + Math.cos(angle) * 42,
-    y1: 58 - Math.sin(angle) * 42,
-    x2: 60 + Math.cos(angle) * 48,
-    y2: 58 - Math.sin(angle) * 48,
-  };
-});
+const gaugeColor = safeScore >= 75
+  ? '#ff4d2e'
+  : safeScore >= 60
+    ? '#df7b17'
+    : safeScore >= 45
+      ? '#d7a329'
+      : safeScore >= 30
+        ? '#99a04c'
+        : '#718575';
 ---
 
 <div class:list={['speed-gauge', compact && 'compact']} role="img" aria-label={`${name ?? label}: ${safeScore} / 100`}>
   <strong class="gauge-score">{safeScore}</strong>
   <svg viewBox="0 0 120 82" aria-hidden="true">
-    <defs>
-      <linearGradient id={`risk-${id}`} x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stop-color="#718575" />
-        <stop offset=".56" stop-color="#d7a329" />
-        <stop offset="1" stop-color="#ff4d2e" />
-      </linearGradient>
-    </defs>
     <path class="gauge-base" d="M12 58 A48 48 0 0 1 108 58" />
-    <path class="gauge-color" d="M12 58 A48 48 0 0 1 108 58" stroke={`url(#risk-${id})`} />
-    {ticks.map((tick) => <line class="tick" x1={tick.x1} y1={tick.y1} x2={tick.x2} y2={tick.y2} />)}
+    <path
+      class="gauge-color"
+      d="M12 58 A48 48 0 0 1 108 58"
+      pathLength="100"
+      stroke={gaugeColor}
+      stroke-dasharray={`${safeScore} 100`}
+    />
     <line class="needle" x1="60" y1="58" x2="95" y2="58" transform={`rotate(${needleAngle} 60 58)`} />
     <circle class="pin" cx="60" cy="58" r="5" />
-    <circle class="pin-core" cx="60" cy="58" r="1.8" />
-    <text class="zero" x="8" y="72">0</text>
-    <text class="hundred" x="112" y="72" text-anchor="end">100</text>
+    <circle class="pin-core" cx="60" cy="58" r="1.8" fill={gaugeColor} />
   </svg>
   {name && <span class="gauge-name">{name}</span>}
 </div>
@@ -48,19 +43,17 @@ const ticks = [0, 25, 50, 75, 100].map((value) => {
   .speed-gauge { position:relative; width:190px; padding-top:26px; color:var(--ink); }
   .gauge-score { position:absolute; top:0; right:0; color:var(--risk); font:500 21px/1 'DM Mono',monospace; letter-spacing:-.06em; }
   svg { display:block; width:100%; overflow:visible; }
-  .gauge-base,.gauge-color { fill:none; stroke-width:7; stroke-linecap:round; }
-  .gauge-base { stroke:#d8d6cd; }
-  .tick { stroke:var(--paper); stroke-width:1.5; }
+  .gauge-base,.gauge-color { fill:none; stroke-linecap:round; }
+  .gauge-base { stroke:#d8d6cd; stroke-width:10; }
+  .gauge-color { stroke-width:7.5; animation:fill-gauge .9s .1s both cubic-bezier(.2,.8,.2,1); }
   .needle { stroke:var(--ink); stroke-width:2.3; stroke-linecap:round; filter:drop-shadow(0 1px 1px rgba(0,0,0,.15)); transition:transform .8s cubic-bezier(.2,.8,.2,1); }
   .pin { fill:var(--ink); }
-  .pin-core { fill:var(--risk); }
-  text { fill:var(--muted); font:500 7px 'DM Mono',monospace; }
   .gauge-name { display:block; margin-top:7px; color:var(--muted); font:500 9px/1.4 'DM Mono',monospace; letter-spacing:.035em; text-transform:uppercase; }
   .compact { width:100%; min-width:58px; padding-top:21px; }
   .compact .gauge-score { font-size:18px; }
   .compact .gauge-name { min-height:26px; font-size:8.5px; }
-  .compact .gauge-base,.compact .gauge-color { stroke-width:8; }
-  .compact .zero,.compact .hundred { display:none; }
+  @keyframes fill-gauge { from { stroke-dasharray:0 100; } }
+  @media (prefers-reduced-motion:reduce) { .gauge-color { animation:none; } }
   @media (max-width:800px) {
     .speed-gauge:not(.compact) { width:150px; padding-top:28px; }
     .speed-gauge:not(.compact) .gauge-score { font-size:22px; }
