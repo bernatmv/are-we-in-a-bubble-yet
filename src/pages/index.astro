@@ -1,6 +1,9 @@
 ---
 import data from '../data/indicators.json';
 import { copy, indicatorCopy, statusCopy, type Locale } from '../i18n';
+import { articlePath, articles } from '../articles';
+import Analytics from '../components/Analytics.astro';
+import ConfidenceGauge from '../components/ConfidenceGauge.astro';
 import SpeedGauge from '../components/SpeedGauge.astro';
 
 interface Props { locale?: Locale }
@@ -27,8 +30,8 @@ function chartPoints(history: (number | number[])[][]) {
 const updated = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(data.updatedAt));
 const elevatedCount = data.indicators.filter((item) => item.score >= 60).length;
 const marketEvents = locale === 'es'
-  ? [{ year: 2000, label: 'Puntocom' }, { year: 2008, label: 'Crisis de crédito' }, { year: 2020, label: 'COVID' }]
-  : [{ year: 2000, label: 'Dot-com' }, { year: 2008, label: 'Credit crisis' }, { year: 2020, label: 'COVID' }];
+  ? [{ year: 2000, label: 'Puntocom' }, { year: 2008, label: 'Crisis de crédito' }, { year: 2020, label: 'COVID' }, { year: 2022, label: 'Shock de tipos' }]
+  : [{ year: 2000, label: 'Dot-com' }, { year: 2008, label: 'Credit crisis' }, { year: 2020, label: 'COVID' }, { year: 2022, label: 'Rate shock' }];
 
 function localizedIndicator(indicator: typeof data.indicators[number]) {
   if (locale === 'en') return indicator;
@@ -42,6 +45,23 @@ function localizedIndicator(indicator: typeof data.indicators[number]) {
   const displayValue = indicator.displayValue.replace('.', ',');
   return { ...indicator, ...translated, change, asOf, displayValue };
 }
+
+const rankedIndicators = [...data.indicators].sort((a, b) => b.score - a.score).map(localizedIndicator);
+const leadingNames = rankedIndicators.slice(0, 2).map((item) => item.name);
+const nameList = locale === 'es' ? `${leadingNames[0]} y ${leadingNames[1]}` : `${leadingNames[0]} and ${leadingNames[1]}`;
+const heroDetail = locale === 'es'
+  ? elevatedCount >= 4
+    ? `La presión es amplia: ${elevatedCount} de ${data.indicators.length} señales están elevadas, lideradas por ${nameList}.`
+    : elevatedCount >= 2
+      ? `La presión se concentra en ${nameList}; ${data.indicators.length - elevatedCount} señales permanecen más frías.`
+      : `La mayoría de señales siguen contenidas; ${leadingNames[0]} es la principal excepción.`
+  : elevatedCount >= 4
+    ? `Pressure is broad: ${elevatedCount} of ${data.indicators.length} signals are elevated, led by ${nameList}.`
+    : elevatedCount >= 2
+      ? `Pressure is concentrated in ${nameList}; ${data.indicators.length - elevatedCount} signals remain cooler.`
+      : `Most signals remain contained; ${leadingNames[0]} is the main outlier.`;
+const confidenceKey = data.confidence >= 75 ? 'high' : data.confidence >= 50 ? 'medium' : 'low';
+const confidenceTier = confidenceKey === 'high' ? c.confidenceHigh : confidenceKey === 'medium' ? c.confidenceMedium : c.confidenceLow;
 
 const schema = {
   '@context': 'https://schema.org',
@@ -103,6 +123,7 @@ const schema = {
     <meta name="twitter:image" content={`${site}${c.image}`} />
     <meta name="twitter:image:alt" content={c.imageAlt} />
     <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
+    <Analytics />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -124,8 +145,9 @@ const schema = {
       <section class="hero wrap" aria-labelledby="verdict-title">
         <div class="hero-copy">
           <p class="kicker">{c.shortAnswer}</p>
-          <h1 id="verdict-title">{c.verdict[data.verdict as keyof typeof c.verdict]}<i>.</i></h1>
+          <h1 id="verdict-title" class:list={[data.verdict === 'MAYBE' && 'medium', !['YES', 'NO', 'MAYBE'].includes(data.verdict) && 'long']}>{c.verdict[data.verdict as keyof typeof c.verdict]}<i>.</i></h1>
           <p class="hero-summary">{c.summaries[data.verdict as keyof typeof c.summaries]}</p>
+          <p class="hero-detail">{heroDetail}</p>
         </div>
         <div class="score-panel" aria-label={`${c.scoreAria}: ${data.score} / 100`}>
           <div class="score-top">
@@ -135,6 +157,7 @@ const schema = {
           <div class="score-track"><span style={`width:${data.score}%`}></span></div>
           <div class="score-labels"><span>{c.cool}</span><span>{c.stretched}</span><span>{c.bubble}</span></div>
           <p>{elevatedCount} / {data.indicators.length} {locale === 'es' ? 'señales están elevadas.' : 'signals are elevated.'} {c.scoreCopy}</p>
+          <ConfidenceGauge score={data.confidence} label={c.confidenceLabel} tier={confidenceTier} help={c.confidenceHelp} detail={c.confidenceCopy[confidenceKey]} />
           <nav class="signal-dials" aria-label={locale === 'es' ? 'Ir a cada señal' : 'Jump to each signal'}>
             {data.indicators.map((rawIndicator) => {
               const indicator = localizedIndicator(rawIndicator);
@@ -239,9 +262,18 @@ const schema = {
     </main>
 
     <footer class="wrap">
-      <a class="wordmark" href={c.path}><span class="mark"></span> {c.wordmark}</a>
-      <p>{c.disclaimer}</p>
-      <a href="#method-title">{c.methodology} ↑</a>
+      <div class="footer-brand">
+        <a class="wordmark" href={c.path}><span class="mark"></span> {c.wordmark}</a>
+        <p>{c.disclaimer}</p>
+      </div>
+      <nav class="footer-reading" aria-label={c.explore}>
+        <span>{c.explore}</span>
+        {articles.map((article) => <a href={articlePath(article, locale)}>{article[locale].title} <i>→</i></a>)}
+      </nav>
+      <div class="footer-meta">
+        <a href="#method-title">{c.methodology} ↑</a>
+        <span>© {new Date().getUTCFullYear()} · {c.freshness}</span>
+      </div>
     </footer>
   </body>
 </html>
@@ -263,11 +295,15 @@ const schema = {
   .freshness { display:flex; align-items:center; gap:9px; font-family:'DM Mono', monospace; font-size:10px; letter-spacing:.1em; color:var(--muted); }
   .freshness span { width:6px; height:6px; background:#5f8b66; border-radius:50%; animation:pulse 2.5s infinite; }
   .hero { min-height:calc(100vh - 78px); position:relative; display:grid; grid-template-columns:1.35fr .65fr; gap:9vw; align-items:center; padding-block:80px 110px; }
+  .hero-copy,.score-panel { min-width:0; }
   .kicker,.eyebrow { font-family:'DM Mono', monospace; font-size:10px; letter-spacing:.15em; font-weight:500; }
   .kicker::before { content:'— '; color:var(--risk); }
   h1 { font-family:'Instrument Serif', serif; font-size:clamp(150px, 24vw, 360px); font-weight:400; line-height:.68; letter-spacing:-.07em; margin:34px 0 54px -12px; }
+  h1.medium { font-size:clamp(110px,20vw,300px); }
+  h1.long { max-width:100%; font-size:clamp(46px,10.5vw,150px); line-height:.78; letter-spacing:-.055em; white-space:nowrap; }
   h1 i { color:var(--risk); font-style:normal; }
   .hero-summary { max-width:610px; margin:0; font-size:clamp(20px, 2vw, 29px); line-height:1.42; letter-spacing:-.035em; }
+  .hero-detail { max-width:590px; margin:24px 0 0; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:13px; line-height:1.65; }
   .score-panel { align-self:center; border-top:1px solid var(--ink); border-bottom:1px solid var(--line); padding:18px 0 24px; }
   .score-top,.score-labels,.gauge-ends { display:flex; justify-content:space-between; font:500 10px 'DM Mono', monospace; letter-spacing:.08em; }
   .score-top span:last-child { color:var(--risk); }
@@ -275,7 +311,7 @@ const schema = {
   .score-track span { display:block; height:100%; background:var(--risk); transform-origin:left; animation:grow 1.2s .25s both cubic-bezier(.2,.8,.2,1); }
   .score-labels { color:var(--muted); font-size:8px; }
   .score-panel p { margin:28px 0 0; max-width:380px; color:var(--muted); font-size:13px; line-height:1.6; }
-  .signal-dials { display:grid; grid-template-columns:repeat(5,minmax(58px,1fr)); gap:10px; margin-top:24px; padding-top:20px; border-top:1px solid var(--line); }
+  .signal-dials { display:grid; grid-template-columns:repeat(6,minmax(52px,1fr)); gap:8px; margin-top:24px; padding-top:20px; border-top:1px solid var(--line); }
   .signal-dials a { min-width:0; color:inherit; text-decoration:none; padding:7px 5px 9px; border:1px solid transparent; border-radius:4px; transition:background .2s,border-color .2s,transform .2s; }
   .signal-dials a:hover,.signal-dials a:focus-visible { background:rgba(255,255,255,.35); border-color:var(--line); transform:translateY(-2px); outline:none; }
   .scroll-cue { position:absolute; bottom:26px; left:0; display:flex; gap:12px; align-items:center; color:var(--risk); font:500 9px 'DM Mono', monospace; letter-spacing:.12em; }
@@ -322,9 +358,14 @@ const schema = {
   .about > div { display:grid; grid-template-columns:1.1fr .9fr; gap:80px; align-items:end; }
   .about-copy { display:grid; grid-template-columns:1fr 1fr; gap:34px; color:var(--muted); line-height:1.7; }
   .about-copy p { margin:0; }
-  footer { min-height:140px; border-top:1px solid var(--ink); display:grid; grid-template-columns:1fr 1fr 1fr; align-items:center; font:400 9px 'DM Mono', monospace; letter-spacing:.08em; }
-  footer p { text-align:center; color:var(--muted); }
-  footer > a:last-child { text-align:right; text-decoration:none; }
+  footer { min-height:280px; padding-block:55px; border-top:1px solid var(--ink); display:grid; grid-template-columns:.9fr 1.35fr .75fr; gap:70px; align-items:start; font:400 9px 'DM Mono', monospace; letter-spacing:.08em; }
+  .footer-brand p { max-width:260px; margin:28px 0 0; color:var(--muted); line-height:1.6; }
+  .footer-reading > span { display:block; margin-bottom:11px; color:var(--risk); font-size:8px; }
+  .footer-reading a { display:flex; justify-content:space-between; gap:20px; padding:13px 0; border-top:1px solid var(--line); text-decoration:none; font:400 22px/1.15 'Instrument Serif',serif; letter-spacing:-.015em; }
+  .footer-reading a:hover { color:var(--risk); }
+  .footer-reading i { font:400 12px 'DM Mono',monospace; font-style:normal; }
+  .footer-meta { display:flex; min-height:165px; flex-direction:column; align-items:flex-end; justify-content:space-between; color:var(--muted); text-align:right; }
+  .footer-meta a { color:var(--ink); text-decoration:none; }
   @keyframes grow { from { transform:scaleX(0); } }
   @keyframes pulse { 50% { box-shadow:0 0 0 5px rgba(95,139,102,.12); } }
   @media (max-width:800px) {
@@ -332,7 +373,10 @@ const schema = {
     .site-header { height:65px; }
     .freshness { display:none; }
     .hero { min-height:auto; grid-template-columns:1fr; gap:70px; padding:90px 0 110px; }
+    .score-panel > p { max-width:100%; }
     h1 { font-size:46vw; margin:35px 0 50px -4px; }
+    h1.medium { font-size:33vw; }
+    h1.long { font-size:clamp(46px,12vw,64px); }
     .hero-summary { font-size:20px; }
     .signal-dials { display:flex; overflow-x:auto; gap:8px; padding-bottom:8px; scrollbar-width:thin; }
     .signal-dials a { flex:0 0 78px; }
@@ -349,8 +393,8 @@ const schema = {
     .method { padding-block:85px; }
     .method-copy,.about-copy { grid-template-columns:1fr; }
     .about { padding-block:85px; }
-    footer { grid-template-columns:1fr; gap:22px; padding-block:38px; }
-    footer p,footer > a:last-child { text-align:left; margin:0; }
+    footer { grid-template-columns:1fr; gap:42px; padding-block:48px; }
+    .footer-meta { min-height:auto; align-items:flex-start; gap:18px; text-align:left; }
   }
   @media (prefers-reduced-motion:reduce) { * { animation:none !important; scroll-behavior:auto !important; } }
 </style>
