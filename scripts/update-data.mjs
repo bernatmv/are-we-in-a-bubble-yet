@@ -1,5 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { calculateScore, getSummary, getVerdict } from './scoring.mjs';
 
 const dataPath = resolve('src/data/indicators.json');
 const dashboard = JSON.parse(await readFile(dataPath, 'utf8'));
@@ -24,7 +25,7 @@ function visibleText(html) {
 }
 
 async function fred(seriesId) {
-  const text = await fetchText(`https://fred.stlouisfed.org/graph/fredgraph.csv?id=${seriesId}`);
+  const text = await fetchText(`https://fred.stlouisfed.org/graph/fredgraph.csv?id=${seriesId}&cosd=1990-01-01`);
   return text.trim().split(/\r?\n/).slice(1).map((line) => {
     const [date, raw] = line.split(',');
     return { date, value: Number(raw) };
@@ -38,7 +39,7 @@ function annualHistory(points, transform = (value) => value) {
 }
 
 async function updateFastSignals() {
-  const [vixPoints, creditPoints] = await Promise.all([fred('VIXCLS'), fred('BAMLH0A0HYM2')]);
+  const [vixPoints, creditPoints] = await Promise.all([fred('VIXCLS'), fred('BAA10Y')]);
   const vixLast = vixPoints.at(-1);
   const creditLast = creditPoints.at(-1);
 
@@ -49,9 +50,12 @@ async function updateFastSignals() {
     asOf: monthYear(vixLast.date), history: annualHistory(vixPoints, (v) => Number(v.toFixed(1)))
   });
   Object.assign(indicator('credit'), {
+    name: 'Corporate credit spread', eyebrow: 'CREDIT · 12% WEIGHT',
+    description: 'The extra yield paid by Baa-rated US companies over 10-year Treasuries. Very tight spreads suggest lenders see little risk and can signal late-cycle complacency.',
+    threshold: 'Complacency below 1.80%', source: "Moody's via FRED", sourceUrl: 'https://fred.stlouisfed.org/series/BAA10Y',
     value: Number(creditLast.value.toFixed(2)), displayValue: `${creditLast.value.toFixed(1)}%`,
-    change: creditLast.value < 3.25 ? 'Lenders are pricing in little risk' : 'Credit risk is being priced in',
-    score: clamp((6.5 - creditLast.value) / 4 * 100), status: creditLast.value < 3.25 ? 'Complacent' : 'Neutral',
+    change: creditLast.value < 1.8 ? 'Lenders are pricing in little risk' : 'Credit risk is being priced in',
+    score: clamp((4.5 - creditLast.value) / 3 * 100), status: creditLast.value < 1.8 ? 'Complacent' : 'Neutral',
     asOf: monthYear(creditLast.date), history: annualHistory(creditPoints, (v) => Number(v.toFixed(2)))
   });
 }
@@ -110,13 +114,9 @@ const updates = await Promise.allSettled([updateFastSignals(), updateBuffettIndi
 for (const result of updates) if (result.status === 'rejected') console.warn(result.reason.message);
 if (updates.every((result) => result.status === 'rejected')) throw new Error('Every data source failed; dashboard was not changed');
 
-const weights = { cape: .30, buffett: .25, margin: .25, credit: .12, vix: .08 };
-dashboard.score = Math.round(dashboard.indicators.reduce((sum, item) => sum + item.score * weights[item.id], 0));
-dashboard.verdict = dashboard.score >= 70 ? 'YES' : dashboard.score >= 45 ? 'MAYBE' : 'NO';
-dashboard.summary = dashboard.score >= 70
-  ? 'Valuations and investor leverage are stretched. Credit and sentiment decide how close the signal sits to maximum alert.'
-  : dashboard.score >= 45 ? 'Some warning signs are elevated, but the evidence is not broad enough for a clear bubble call.'
-  : 'The major valuation, leverage, and credit signals are not jointly showing bubble conditions.';
+dashboard.score = calculateScore(dashboard.indicators);
+dashboard.verdict = getVerdict(dashboard.score);
+dashboard.summary = getSummary(dashboard.verdict);
 dashboard.updatedAt = new Date().toISOString();
 await writeFile(dataPath, `${JSON.stringify(dashboard, null, 2)}\n`);
 console.log(`Updated dashboard: ${dashboard.verdict}, ${dashboard.score}/100`);
