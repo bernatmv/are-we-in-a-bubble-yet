@@ -3,6 +3,7 @@ import data from '../data/indicators.json';
 import { copy, indicatorCopy, statusCopy, type Locale } from '../i18n';
 import { articlePath, articles } from '../articles';
 import Analytics from '../components/Analytics.astro';
+import BrandMark from '../components/BrandMark.astro';
 import ConfidenceGauge from '../components/ConfidenceGauge.astro';
 import SpeedGauge from '../components/SpeedGauge.astro';
 
@@ -151,7 +152,7 @@ const schema = {
   <body>
     <header class="site-header wrap">
       <a class="wordmark" href={c.path} aria-label={c.homeLabel}>
-        <span class="mark">?</span>
+        <BrandMark />
         {c.wordmark}
       </a>
       <div class="header-meta">
@@ -292,7 +293,7 @@ const schema = {
 
     <footer class="wrap">
       <div class="footer-brand">
-        <a class="wordmark" href={c.path}><span class="mark">?</span> {c.wordmark}</a>
+        <a class="wordmark" href={c.path}><BrandMark /> {c.wordmark}</a>
         <p>{c.disclaimer}</p>
       </div>
       <nav class="footer-reading" aria-label={c.explore}>
@@ -317,7 +318,6 @@ const schema = {
   .wrap { width:min(1320px, calc(100% - 64px)); margin-inline:auto; }
   .site-header { height:78px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
   .wordmark { display:flex; align-items:center; gap:11px; font-family:'DM Mono', monospace; font-size:12px; font-weight:500; letter-spacing:.08em; text-decoration:none; }
-  .mark { width:16px; height:16px; border-radius:50%; display:grid; place-items:center; color:var(--paper); background:var(--risk); box-shadow:0 0 0 3px var(--ink); font:500 9px/1 'DM Mono',monospace; letter-spacing:0; }
   .header-meta { display:flex; align-items:center; gap:22px; }
   .language { border:1px solid var(--line); border-radius:50%; width:32px; height:32px; display:grid; place-items:center; text-decoration:none; font:500 9px 'DM Mono', monospace; letter-spacing:.08em; transition:color .2s,border-color .2s,background .2s; }
   .language:hover { color:var(--risk); border-color:var(--risk); background:rgba(255,255,255,.35); }
