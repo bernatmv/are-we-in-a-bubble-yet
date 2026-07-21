@@ -29,7 +29,8 @@ const safeScore = Math.max(0, Math.min(100, score));
 </aside>
 
 <style>
-  .confidence { display:grid; grid-template-columns:92px 1fr; gap:18px; align-items:center; margin-top:34px; padding-top:26px; border-top:1px solid var(--line); }
+  .confidence { display:grid; grid-template-columns:92px minmax(0,1fr); gap:18px; align-items:center; margin-top:34px; padding-top:26px; border-top:1px solid var(--line); }
+  .copy { min-width:0; }
   .dial { position:relative; width:92px; aspect-ratio:1; display:grid; place-items:center; }
   svg { position:absolute; inset:0; width:100%; transform:rotate(-90deg); }
   circle { fill:none; stroke-width:7; }
@@ -43,6 +44,6 @@ const safeScore = Math.max(0, Math.min(100, score));
   .copy p { margin:9px 0 0; color:var(--ink); font-size:11px; line-height:1.5; }
   .copy small { display:block; margin-top:6px; color:var(--muted); font-size:9px; line-height:1.5; }
   @keyframes draw { from { stroke-dasharray:0 100; } }
-  @media (max-width:800px) { .confidence { grid-template-columns:80px 1fr; } .dial { width:80px; } }
+  @media (max-width:800px) { .confidence { grid-template-columns:80px minmax(0,1fr); } .dial { width:80px; } }
   @media (prefers-reduced-motion:reduce) { .value { animation:none; } }
 </style>
