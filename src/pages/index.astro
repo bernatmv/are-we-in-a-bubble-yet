@@ -3,6 +3,7 @@ import data from '../data/indicators.json';
 import { copy, indicatorCopy, statusCopy, type Locale } from '../i18n';
 import { articlePath, articles } from '../articles';
 import Analytics from '../components/Analytics.astro';
+import BrandMark from '../components/BrandMark.astro';
 import ConfidenceGauge from '../components/ConfidenceGauge.astro';
 import SpeedGauge from '../components/SpeedGauge.astro';
 
@@ -61,6 +62,10 @@ function localizedIndicator(indicator: typeof data.indicators[number]) {
 }
 
 const rankedIndicators = [...data.indicators].sort((a, b) => b.score - a.score).map(localizedIndicator);
+const orderedIndicators = [...data.indicators].sort((a, b) => {
+  const weight = (eyebrow: string) => Number(eyebrow.match(/\d+/)?.[0] ?? 0);
+  return weight(b.eyebrow) - weight(a.eyebrow);
+});
 const leadingNames = rankedIndicators.slice(0, 2).map((item) => item.name);
 const nameList = locale === 'es' ? `${leadingNames[0]} y ${leadingNames[1]}` : `${leadingNames[0]} and ${leadingNames[1]}`;
 const heroDetail = locale === 'es'
@@ -147,7 +152,7 @@ const schema = {
   <body>
     <header class="site-header wrap">
       <a class="wordmark" href={c.path} aria-label={c.homeLabel}>
-        <span class="mark">?</span>
+        <BrandMark />
         {c.wordmark}
       </a>
       <div class="header-meta">
@@ -173,7 +178,7 @@ const schema = {
           <p>{elevatedCount} / {data.indicators.length} {locale === 'es' ? 'señales están elevadas.' : 'signals are elevated.'} {c.scoreCopy}</p>
           <ConfidenceGauge score={data.confidence} label={c.confidenceLabel} tier={confidenceTier} help={c.confidenceHelp} detail={c.confidenceCopy[confidenceKey]} />
           <nav class="signal-dials" aria-label={locale === 'es' ? 'Ir a cada señal' : 'Jump to each signal'}>
-            {data.indicators.map((rawIndicator) => {
+            {orderedIndicators.map((rawIndicator) => {
               const indicator = localizedIndicator(rawIndicator);
               return (
                 <a href={`#signal-${indicator.id}`} aria-label={`${indicator.name}: ${indicator.score} / 100`}>
@@ -196,7 +201,7 @@ const schema = {
         </div>
 
         <div class="cards">
-          {data.indicators.map((rawIndicator, index) => {
+          {orderedIndicators.map((rawIndicator, index) => {
             const indicator = localizedIndicator(rawIndicator);
             const chart = chartGeometry(indicator.history);
             const visibleEvents = marketEvents.filter((event) => event.time >= chart.start && chart.end >= event.time)
@@ -288,7 +293,7 @@ const schema = {
 
     <footer class="wrap">
       <div class="footer-brand">
-        <a class="wordmark" href={c.path}><span class="mark">?</span> {c.wordmark}</a>
+        <a class="wordmark" href={c.path}><BrandMark /> {c.wordmark}</a>
         <p>{c.disclaimer}</p>
       </div>
       <nav class="footer-reading" aria-label={c.explore}>
@@ -313,7 +318,6 @@ const schema = {
   .wrap { width:min(1320px, calc(100% - 64px)); margin-inline:auto; }
   .site-header { height:78px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
   .wordmark { display:flex; align-items:center; gap:11px; font-family:'DM Mono', monospace; font-size:12px; font-weight:500; letter-spacing:.08em; text-decoration:none; }
-  .mark { width:16px; height:16px; border-radius:50%; display:grid; place-items:center; color:var(--paper); background:var(--risk); box-shadow:0 0 0 3px var(--ink); font:500 9px/1 'DM Mono',monospace; letter-spacing:0; }
   .header-meta { display:flex; align-items:center; gap:22px; }
   .language { border:1px solid var(--line); border-radius:50%; width:32px; height:32px; display:grid; place-items:center; text-decoration:none; font:500 9px 'DM Mono', monospace; letter-spacing:.08em; transition:color .2s,border-color .2s,background .2s; }
   .language:hover { color:var(--risk); border-color:var(--risk); background:rgba(255,255,255,.35); }
@@ -401,7 +405,7 @@ const schema = {
   @keyframes grow { from { transform:scaleX(0); } }
   @keyframes pulse { 50% { box-shadow:0 0 0 5px rgba(95,139,102,.12); } }
   @media (max-width:800px) {
-    .wrap { width:min(calc(100% - 32px), 1320px); }
+    .wrap { width:100%; padding-inline:16px; }
     .site-header { height:65px; }
     .freshness { display:none; }
     .hero { min-height:auto; grid-template-columns:1fr; gap:64px; padding:64px 0 88px; isolation:isolate; }
@@ -417,6 +421,8 @@ const schema = {
     .signal-dials a { padding-block:9px 14px; }
     .scroll-cue { display:none; }
     .evidence { padding-block:85px; }
+    .evidence { padding-inline:0; }
+    .evidence > .section-heading { padding-inline:16px; }
     .section-heading,.method > div,.about > div { grid-template-columns:1fr; gap:38px; }
     .section-heading > p { justify-self:start; }
     .cards { grid-template-columns:1fr; }

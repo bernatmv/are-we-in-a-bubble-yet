@@ -14,20 +14,27 @@ function socialCard({ eyebrow, question, line2, footer }) {
     <rect width="1200" height="630" fill="#f0eee7"/>
     <rect width="1200" height="630" filter="url(#noise)" opacity=".42"/>
     <line x1="64" y1="82" x2="1136" y2="82" stroke="#c9c7bd"/>
-    <circle cx="74" cy="48" r="11" fill="#ff4d2e"/>
-    <text x="74" y="53" text-anchor="middle" font-family="Georgia,serif" font-size="15" font-weight="700" fill="#f0eee7">?</text>
+    <g transform="translate(62 36) scale(.375)">
+      <rect width="64" height="64" rx="15" fill="#151711"/>
+      <path d="M42 17 A19 19 0 1 0 47 23" fill="none" stroke="#ff4d2e" stroke-width="4" stroke-linecap="round"/>
+      <path d="M12 46 L21 40 L28 43 L38 32 L45 35 L56 18" fill="none" stroke="#f0eee7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="56" cy="18" r="3" fill="#ff4d2e"/>
+    </g>
     <text x="96" y="55" font-family="Courier New,monospace" font-size="15" font-weight="700" letter-spacing="2" fill="#151711">ARE WE IN A BUBBLE YET?</text>
     <text x="64" y="162" font-family="Courier New,monospace" font-size="13" font-weight="700" letter-spacing="2.5" fill="#ff4d2e">— ${escapeXml(eyebrow)}</text>
     <text x="60" y="302" font-family="Georgia,serif" font-size="86" letter-spacing="-4" fill="#151711">${escapeXml(question)}</text>
     <text x="60" y="397" font-family="Georgia,serif" font-size="86" letter-spacing="-4" fill="#151711">${escapeXml(line2)}<tspan fill="#ff4d2e">?</tspan></text>
-    <circle cx="1035" cy="355" r="94" fill="#ff4d2e"/>
-    <circle cx="1001" cy="319" r="21" fill="#fff" fill-opacity=".68"/>
-    <text x="1035" y="406" text-anchor="middle" font-family="Georgia,serif" font-size="150" font-weight="700" fill="#f0eee7">?</text>
+    <g transform="translate(939 259) scale(3)">
+      <rect width="64" height="64" rx="15" fill="#151711"/>
+      <path d="M42 17 A19 19 0 1 0 47 23" fill="none" stroke="#ff4d2e" stroke-width="4" stroke-linecap="round"/>
+      <path d="M12 46 L21 40 L28 43 L38 32 L45 35 L56 18" fill="none" stroke="#f0eee7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="56" cy="18" r="3" fill="#ff4d2e"/>
+    </g>
     <text x="64" y="560" font-family="Courier New,monospace" font-size="14" letter-spacing="1.5" fill="#6d7067">${escapeXml(footer)}</text>
   </svg>`;
 }
 
-const icon = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" rx="120" fill="#151711"/><circle cx="256" cy="256" r="184" fill="#ff4d2e"/><circle cx="192" cy="184" r="40" fill="#fff" fill-opacity=".58"/><path d="M184 204c6-49 37-74 83-74 50 0 83 29 83 73 0 35-17 53-49 74-25 16-33 30-33 55v9h-49v-13c0-36 12-57 42-76 24-16 34-27 34-46 0-20-13-33-33-33-22 0-35 13-38 39z" fill="#f0eee7"/><circle cx="245" cy="394" r="30" fill="#f0eee7"/></svg>`;
+const icon = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#151711"/><path d="M42 17 A19 19 0 1 0 47 23" fill="none" stroke="#ff4d2e" stroke-width="4" stroke-linecap="round"/><path d="M12 46 L21 40 L28 43 L38 32 L45 35 L56 18" fill="none" stroke="#f0eee7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="56" cy="18" r="3" fill="#ff4d2e"/></svg>`;
 
 await Promise.all([
   sharp(Buffer.from(icon)).resize(32, 32).png().toFile(resolve(publicDir, 'favicon-32.png')),
