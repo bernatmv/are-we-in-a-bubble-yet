@@ -240,7 +240,7 @@ const schema = {
                     <line x1="0" y1="6" x2="100" y2="6" />
                     <path class="chart-area" d={chart.area} fill={`url(#dither-${indicator.id})`} />
                     <path class="chart-line" d={chart.line} />
-                    <circle cx={chart.last?.x} cy={chart.last?.y} r="1.7" />
+                    <line class="current-point" x1={chart.last?.x} x2={chart.last?.x} y1={chart.last?.y} y2={(chart.last?.y ?? 0) + .001} />
                   </svg>
                   <div class="event-layer" aria-hidden="true">
                     {visibleEvents.map((event) => (
@@ -368,7 +368,7 @@ const schema = {
   .chart line { stroke:var(--line); stroke-width:.25; stroke-dasharray:1 2; }
   .chart-area { opacity:.48; }
   .chart-line { fill:none; stroke:var(--signal); stroke-width:1.15; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; filter:drop-shadow(0 1px 0 color-mix(in srgb,var(--paper) 70%,transparent)); }
-  .chart circle { fill:var(--signal); vector-effect:non-scaling-stroke; }
+  .chart .current-point { stroke:var(--signal); stroke-width:5; stroke-linecap:round; stroke-dasharray:none; vector-effect:non-scaling-stroke; }
   .event-layer { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
   .market-event { position:absolute; top:1px; bottom:8px; width:1px; border-left:1px dashed color-mix(in srgb,var(--ink) 36%,transparent); }
   .market-event b,.market-event em { position:absolute; left:5px; white-space:nowrap; font:500 7px 'DM Mono',monospace; letter-spacing:.06em; }
@@ -410,7 +410,7 @@ const schema = {
     h1.medium { font-size:33vw; }
     h1.long { font-size:clamp(46px,12vw,64px); }
     .hero-summary { font-size:20px; }
-    .score-panel { width:100vw; margin-left:calc(50% - 50vw); padding:26px 16px 32px; color:#f0eee7; background:var(--ink); border-color:#46483f; --ink:#f0eee7; --paper:#151711; --line:#46483f; --muted:#d1d2ca; }
+    .score-panel { width:100vw; margin-left:calc(50% - 50vw); padding:26px 16px 32px; color:#f0eee7; background:#151711; border-color:#46483f; --ink:#f0eee7; --paper:#151711; --line:#46483f; --muted:#d1d2ca; }
     .signal-dials { grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px 22px; }
     .signal-dials a { padding-block:9px 14px; }
     .scroll-cue { display:none; }
