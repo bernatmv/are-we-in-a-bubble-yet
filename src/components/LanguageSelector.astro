@@ -1,0 +1,44 @@
+---
+import { localeMeta, type Locale } from '../i18n';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const locales = Object.entries(localeMeta) as [Locale, typeof localeMeta[Locale]][];
+---
+
+<details class="language-selector">
+  <summary aria-label={`Language: ${localeMeta[locale].name}`}>{localeMeta[locale].label}</summary>
+  <nav aria-label="Languages">
+    {locales.map(([code, item]) => (
+      <a href={item.path} lang={code} hreflang={code} data-locale={code} aria-current={code === locale ? 'page' : undefined}>
+        <span>{item.label}</span>{item.name}
+      </a>
+    ))}
+  </nav>
+</details>
+
+<script is:inline define:vars={{ locale }}>
+  const localePaths = { en: '/', es: '/es/', ca: '/ca/', de: '/de/', fr: '/fr/', it: '/it/', ja: '/ja/' };
+  document.querySelectorAll('[data-locale]').forEach((link) => link.addEventListener('click', () => {
+    localStorage.setItem('bubble-locale', link.dataset.locale);
+  }));
+  if (locale === 'en' && location.pathname === '/' && !localStorage.getItem('bubble-locale')) {
+    const detected = navigator.languages
+      .map((language) => language.toLowerCase().split('-')[0])
+      .find((language) => language in localePaths);
+    if (detected && detected !== 'en') location.replace(localePaths[detected]);
+  }
+</script>
+
+<style>
+  .language-selector { position:relative; z-index:20; }
+  summary { width:34px; height:34px; display:grid; place-items:center; border:1px solid var(--line); border-radius:50%; cursor:pointer; list-style:none; font:500 9px 'DM Mono',monospace; letter-spacing:.06em; transition:border-color .2s,color .2s,background .2s; }
+  summary::-webkit-details-marker { display:none; }
+  summary:hover,.language-selector[open] summary { color:var(--risk); border-color:var(--risk); background:var(--paper); }
+  nav { position:absolute; top:43px; right:0; width:178px; padding:7px; border:1px solid var(--ink); background:var(--paper); box-shadow:6px 6px 0 rgba(21,23,17,.12); }
+  a { display:flex; align-items:center; gap:12px; padding:9px 10px; color:var(--ink); text-decoration:none; font:500 10px 'Manrope',sans-serif; }
+  a + a { border-top:1px solid var(--line); }
+  a:hover { color:var(--risk); }
+  a[aria-current='page'] { background:rgba(21,23,17,.055); }
+  a span { width:24px; color:var(--muted); font:500 8px 'DM Mono',monospace; letter-spacing:.06em; }
+</style>
