@@ -21,3 +21,9 @@ Configure these production environment variables in Vercel:
 - `VERCEL_DEPLOY_HOOK_URL`: a Deploy Hook created under Project Settings → Git for the production branch.
 
 The dashboard is an educational market-risk summary, not investment advice. Thresholds are documented in `src/data/indicators.json` and should be reviewed periodically as market structure changes.
+
+## Localization and SEO
+
+The English page lives at `/` and the Spanish version at `/es/`. Both publish self-referencing canonicals, reciprocal `hreflang` links, localized Open Graph and X cards, Dataset JSON-LD, and entries in `public/sitemap.xml`.
+
+Run `npm run seo:check` after `npm run build` to validate titles, descriptions, canonicals, language links, structured data, headings, and social image dimensions. Run `npm run assets` after editing the favicon or social-card generator.

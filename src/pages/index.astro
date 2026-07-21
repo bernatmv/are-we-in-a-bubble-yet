@@ -1,5 +1,14 @@
 ---
 import data from '../data/indicators.json';
+import { copy, indicatorCopy, statusCopy, type Locale } from '../i18n';
+
+interface Props { locale?: Locale }
+
+const locale = Astro.props.locale ?? 'en';
+const c = copy[locale];
+const site = 'https://areweinabubleyet.com';
+const canonical = new URL(c.path, site).href;
+const otherCanonical = new URL(c.otherPath, site).href;
 
 const colors = { Extreme: '#ff4d2e', Elevated: '#d7a329', Complacent: '#df7b17', Neutral: '#526656' };
 
@@ -14,67 +23,138 @@ function chartPoints(history: (number | number[])[][]) {
   }).join(' ');
 }
 
-const updated = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(data.updatedAt));
+const updated = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(data.updatedAt));
+const elevatedCount = data.indicators.filter((item) => item.score >= 60).length;
+
+function localizedIndicator(indicator: typeof data.indicators[number]) {
+  if (locale === 'en') return indicator;
+  const translated = indicatorCopy.es[indicator.id as keyof typeof indicatorCopy.es];
+  let change: string = translated.change;
+  if (change === 'VARIACIÓN_INTERANUAL') {
+    change = `${indicator.change.match(/[+−-]?\d+(?:\.\d+)?%/)?.[0] ?? ''} interanual`;
+  }
+  const months: Record<string, string> = { Jan: 'ene', Feb: 'feb', Mar: 'mar', Apr: 'abr', May: 'may', Jun: 'jun', Jul: 'jul', Aug: 'ago', Sep: 'sep', Oct: 'oct', Nov: 'nov', Dec: 'dic' };
+  const asOf = indicator.asOf.replace(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/, (month) => months[month]).replace(/^Q/, 'T');
+  const displayValue = indicator.displayValue.replace('.', ',');
+  return { ...indicator, ...translated, change, asOf, displayValue };
+}
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite', '@id': `${site}/#website`, url: `${site}/`, name: 'Are We in a Bubble Yet?',
+      description: c.description, inLanguage: ['en', 'es']
+    },
+    {
+      '@type': 'WebPage', '@id': `${canonical}#webpage`, url: canonical, name: c.title, description: c.description,
+      isPartOf: { '@id': `${site}/#website` }, inLanguage: c.lang, dateModified: data.updatedAt,
+      primaryImageOfPage: { '@type': 'ImageObject', url: `${site}${c.image}`, width: 1200, height: 630 },
+      about: { '@type': 'FinancialProduct', name: locale === 'es' ? 'Mercado bursátil de Estados Unidos' : 'United States stock market' }
+    },
+    {
+      '@type': 'Dataset', '@id': `${canonical}#dataset`, name: c.datasetName, description: c.datasetDescription,
+      url: canonical, creator: { '@type': 'Organization', name: 'Are We in a Bubble Yet?', url: `${site}/` },
+      dateModified: data.updatedAt, inLanguage: c.lang, temporalCoverage: '1871/..',
+      variableMeasured: data.indicators.map((item) => localizedIndicator(item).name),
+      isBasedOn: data.indicators.map((item) => item.sourceUrl)
+    }
+  ]
+};
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={c.lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="description" content="A plain-English dashboard of reliable US stock market bubble indicators, updated daily." />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2238%22 fill=%22%23ff4d2e%22/></svg>" />
+    <meta name="description" content={c.description} />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="theme-color" content="#f0eee7" />
+    <meta name="application-name" content="Are We in a Bubble Yet?" />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={c.lang} href={canonical} />
+    <link rel="alternate" hreflang={locale === 'en' ? 'es' : 'en'} href={otherCanonical} />
+    <link rel="alternate" hreflang="x-default" href={`${site}/`} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Are We in a Bubble Yet?" />
+    <meta property="og:title" content={c.title} />
+    <meta property="og:description" content={c.description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={c.locale} />
+    <meta property="og:locale:alternate" content={locale === 'en' ? 'es_ES' : 'en_US'} />
+    <meta property="og:image" content={`${site}${c.image}`} />
+    <meta property="og:image:secure_url" content={`${site}${c.image}`} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={c.imageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={c.title} />
+    <meta name="twitter:description" content={c.description} />
+    <meta name="twitter:image" content={`${site}${c.image}`} />
+    <meta name="twitter:image:alt" content={c.imageAlt} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
-    <title>Are we in a bubble yet?</title>
+    <title>{c.title}</title>
   </head>
   <body>
     <header class="site-header wrap">
-      <a class="wordmark" href="/" aria-label="Are we in a bubble yet? home">
+      <a class="wordmark" href={c.path} aria-label={c.homeLabel}>
         <span class="mark"></span>
-        ARE WE IN A BUBBLE YET?
+        {c.wordmark}
       </a>
-      <div class="freshness"><span></span> DATA CHECKED DAILY · {updated.toUpperCase()}</div>
+      <div class="header-meta">
+        <a class="language" href={c.otherPath} lang={locale === 'en' ? 'es' : 'en'} hreflang={locale === 'en' ? 'es' : 'en'} aria-label={c.otherName}>{c.otherLabel}</a>
+        <div class="freshness"><span></span> {c.freshness} · {updated.toUpperCase()}</div>
+      </div>
     </header>
 
     <main>
       <section class="hero wrap" aria-labelledby="verdict-title">
         <div class="hero-copy">
-          <p class="kicker">THE SHORT ANSWER</p>
-          <h1 id="verdict-title">{data.verdict}<i>.</i></h1>
-          <p class="hero-summary">{data.summary}</p>
+          <p class="kicker">{c.shortAnswer}</p>
+          <h1 id="verdict-title">{c.verdict[data.verdict as keyof typeof c.verdict]}<i>.</i></h1>
+          <p class="hero-summary">{c.summaries[data.verdict as keyof typeof c.summaries]}</p>
         </div>
-        <div class="score-panel" aria-label={`Bubble pressure score: ${data.score} out of 100`}>
+        <div class="score-panel" aria-label={`${c.scoreAria}: ${data.score} / 100`}>
           <div class="score-top">
-            <span>COMPOSITE PRESSURE</span>
+            <span>{c.scoreLabel}</span>
             <span>{data.score} / 100</span>
           </div>
           <div class="score-track"><span style={`width:${data.score}%`}></span></div>
-          <div class="score-labels"><span>COOL</span><span>STRETCHED</span><span>BUBBLE</span></div>
-          <p>Four of five signals are elevated. Valuation and leverage account for 80% of the score.</p>
+          <div class="score-labels"><span>{c.cool}</span><span>{c.stretched}</span><span>{c.bubble}</span></div>
+          <p>{elevatedCount} / {data.indicators.length} {locale === 'es' ? 'señales están elevadas.' : 'signals are elevated.'} {c.scoreCopy}</p>
         </div>
-        <div class="scroll-cue" aria-hidden="true">↓ <span>READ THE EVIDENCE</span></div>
+        <div class="scroll-cue" aria-hidden="true">↓ <span>{c.readEvidence}</span></div>
       </section>
 
       <section class="evidence wrap" aria-labelledby="evidence-title">
         <div class="section-heading">
           <div>
-            <p class="kicker">THE EVIDENCE</p>
-            <h2 id="evidence-title">Five signals.<br /><em>One clear read.</em></h2>
+            <p class="kicker">{c.evidenceKicker}</p>
+            <h2 id="evidence-title">{c.evidenceTitle[0]}<br /><em>{c.evidenceTitle[1]}</em></h2>
           </div>
-          <p>No single metric can call a market top. We combine slow-moving valuation and leverage data with faster credit and sentiment signals.</p>
+          <p>{c.evidenceIntro}</p>
         </div>
 
         <div class="cards">
-          {data.indicators.map((indicator, index) => (
-            <article class:list={['indicator', index === 0 && 'featured']} style={`--signal:${colors[indicator.status as keyof typeof colors] ?? '#526656'}`}>
+          {data.indicators.map((rawIndicator, index) => {
+            const indicator = localizedIndicator(rawIndicator);
+            return (
+            <article class:list={['indicator', index === 0 && 'featured']} style={`--signal:${colors[rawIndicator.status as keyof typeof colors] ?? '#526656'}`}>
               <div class="card-header">
                 <div>
                   <p class="eyebrow">{String(index + 1).padStart(2, '0')} / {indicator.eyebrow}</p>
                   <h3>{indicator.name}</h3>
                 </div>
-                <span class="status"><i></i>{indicator.status}</span>
+                <span class="status"><i></i>{statusCopy[locale][rawIndicator.status as keyof typeof statusCopy.en]}</span>
               </div>
 
               <div class="metric-row">
@@ -82,10 +162,10 @@ const updated = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone
                   <strong>{indicator.displayValue}</strong>
                   <span>{indicator.change}</span>
                 </div>
-                <div class="gauge" aria-label={`${indicator.name} risk score ${indicator.score} out of 100`}>
-                  <span class="gauge-label">RISK {indicator.score}</span>
+                <div class="gauge" aria-label={`${c.risk}: ${indicator.score} / 100 — ${indicator.name}`}>
+                  <span class="gauge-label">{c.risk} {indicator.score}</span>
                   <div class="gauge-track"><i style={`left:${indicator.score}%`}></i></div>
-                  <div class="gauge-ends"><span>LOW</span><span>HIGH</span></div>
+                  <div class="gauge-ends"><span>{c.low}</span><span>{c.high}</span></div>
                 </div>
               </div>
 
@@ -98,7 +178,7 @@ const updated = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone
                   <polyline points={chartPoints(indicator.history)} />
                   <circle cx="100" cy={chartPoints(indicator.history).split(' ').at(-1)?.split(',')[1]} r="1.7" />
                 </svg>
-                <div class="chart-years"><span>{indicator.history[0][0]}</span><span>HISTORICAL TREND</span><span>{indicator.history.at(-1)?.[0]}</span></div>
+                <div class="chart-years"><span>{indicator.history[0][0]}</span><span>{c.trend}</span><span>{indicator.history.at(-1)?.[0]}</span></div>
               </div>
 
               <p class="description">{indicator.description}</p>
@@ -106,28 +186,39 @@ const updated = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone
                 <span>{indicator.threshold}</span>
                 <a href={indicator.sourceUrl} target="_blank" rel="noreferrer">{indicator.source} ↗</a>
               </div>
-              <span class="as-of">AS OF {indicator.asOf.toUpperCase()}</span>
+              <span class="as-of">{c.asOf} {indicator.asOf.toUpperCase()}</span>
             </article>
-          ))}
+          )})}
         </div>
       </section>
 
       <section class="method wrap" aria-labelledby="method-title">
-        <p class="kicker">HOW TO READ THIS</p>
+        <p class="kicker">{c.methodKicker}</p>
         <div>
-          <h2 id="method-title">A temperature check,<br /><em>not a crystal ball.</em></h2>
+          <h2 id="method-title">{c.methodTitle[0]}<br /><em>{c.methodTitle[1]}</em></h2>
           <div class="method-copy">
-            <p>This score measures how closely today resembles historically overheated US equity markets. It does not predict when prices will turn—or whether they must.</p>
-            <p>Each indicator is normalized from 0–100 against transparent thresholds, then weighted toward fundamentals: valuation 55%, leverage 25%, credit 12%, sentiment 8%.</p>
+            <p>{c.methodP1}</p>
+            <p>{c.methodP2}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="about wrap" aria-labelledby="about-title">
+        <p class="kicker">{c.aboutKicker}</p>
+        <div>
+          <h2 id="about-title">{c.aboutTitle[0]}<br /><em>{c.aboutTitle[1]}</em></h2>
+          <div class="about-copy">
+            <p>{c.aboutP1}</p>
+            <p>{c.aboutP2}</p>
           </div>
         </div>
       </section>
     </main>
 
     <footer class="wrap">
-      <a class="wordmark" href="/"><span class="mark"></span> ARE WE IN A BUBBLE YET?</a>
-      <p>Built from public data. Not investment advice.</p>
-      <a href="#method-title">METHODOLOGY & DATA ↑</a>
+      <a class="wordmark" href={c.path}><span class="mark"></span> {c.wordmark}</a>
+      <p>{c.disclaimer}</p>
+      <a href="#method-title">{c.methodology} ↑</a>
     </footer>
   </body>
 </html>
@@ -143,6 +234,9 @@ const updated = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone
   .site-header { height:78px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
   .wordmark { display:flex; align-items:center; gap:11px; font-family:'DM Mono', monospace; font-size:12px; font-weight:500; letter-spacing:.08em; text-decoration:none; }
   .mark { width:12px; height:12px; border-radius:50%; display:inline-block; background:var(--risk); box-shadow:0 0 0 4px rgba(255,77,46,.14); }
+  .header-meta { display:flex; align-items:center; gap:22px; }
+  .language { border:1px solid var(--line); border-radius:50%; width:32px; height:32px; display:grid; place-items:center; text-decoration:none; font:500 9px 'DM Mono', monospace; letter-spacing:.08em; transition:color .2s,border-color .2s,background .2s; }
+  .language:hover { color:var(--risk); border-color:var(--risk); background:rgba(255,255,255,.35); }
   .freshness { display:flex; align-items:center; gap:9px; font-family:'DM Mono', monospace; font-size:10px; letter-spacing:.1em; color:var(--muted); }
   .freshness span { width:6px; height:6px; background:#5f8b66; border-radius:50%; animation:pulse 2.5s infinite; }
   .hero { min-height:calc(100vh - 78px); position:relative; display:grid; grid-template-columns:1.35fr .65fr; gap:9vw; align-items:center; padding-block:80px 110px; }
@@ -196,6 +290,10 @@ const updated = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone
   .method > div { display:grid; grid-template-columns:1.1fr .9fr; gap:80px; align-items:end; }
   .method-copy { display:grid; grid-template-columns:1fr 1fr; gap:34px; color:var(--muted); line-height:1.7; }
   .method-copy p { margin:0; }
+  .about { padding-block:130px; border-top:1px solid var(--line); }
+  .about > div { display:grid; grid-template-columns:1.1fr .9fr; gap:80px; align-items:end; }
+  .about-copy { display:grid; grid-template-columns:1fr 1fr; gap:34px; color:var(--muted); line-height:1.7; }
+  .about-copy p { margin:0; }
   footer { min-height:140px; border-top:1px solid var(--ink); display:grid; grid-template-columns:1fr 1fr 1fr; align-items:center; font:400 9px 'DM Mono', monospace; letter-spacing:.08em; }
   footer p { text-align:center; color:var(--muted); }
   footer > a:last-child { text-align:right; text-decoration:none; }
@@ -204,14 +302,13 @@ const updated = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone
   @media (max-width:800px) {
     .wrap { width:min(100% - 32px, 1320px); }
     .site-header { height:65px; }
-    .freshness { font-size:0; }
-    .freshness::after { content:'UPDATED DAILY'; font-size:8px; }
+    .freshness { display:none; }
     .hero { min-height:auto; grid-template-columns:1fr; gap:70px; padding:90px 0 110px; }
     h1 { font-size:46vw; margin:35px 0 50px -4px; }
     .hero-summary { font-size:20px; }
     .scroll-cue { display:none; }
     .evidence { padding-block:85px; }
-    .section-heading,.method > div { grid-template-columns:1fr; gap:38px; }
+    .section-heading,.method > div,.about > div { grid-template-columns:1fr; gap:38px; }
     .section-heading > p { justify-self:start; }
     .cards { grid-template-columns:1fr; }
     .indicator.featured { grid-column:auto; }
@@ -220,7 +317,8 @@ const updated = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone
     .gauge { max-width:220px; }
     .chart { height:130px; }
     .method { padding-block:85px; }
-    .method-copy { grid-template-columns:1fr; }
+    .method-copy,.about-copy { grid-template-columns:1fr; }
+    .about { padding-block:85px; }
     footer { grid-template-columns:1fr; gap:22px; padding-block:38px; }
     footer p,footer > a:last-child { text-align:left; margin:0; }
   }
