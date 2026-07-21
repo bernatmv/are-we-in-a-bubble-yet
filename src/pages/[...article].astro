@@ -1,0 +1,111 @@
+---
+import Analytics from '../components/Analytics.astro';
+import { articleAlternatePath, articlePath, articles } from '../articles';
+import { copy, type Locale } from '../i18n';
+
+export function getStaticPaths() {
+  return articles.flatMap((article) => ([
+    { params: { article: `learn/${article.slug.en}` }, props: { article, locale: 'en' } },
+    { params: { article: `es/aprender/${article.slug.es}` }, props: { article, locale: 'es' } }
+  ]));
+}
+
+const { article, locale } = Astro.props as { article: typeof articles[number], locale: Locale };
+const c = copy[locale];
+const content = article[locale];
+const site = 'https://areweinabubleyet.com';
+const path = articlePath(article, locale);
+const canonical = new URL(path, site).href;
+const alternate = new URL(articleAlternatePath(article, locale), site).href;
+const related = articles.filter((item) => item.id !== article.id);
+const schema = {
+  '@context': 'https://schema.org', '@type': 'Article', headline: content.title, description: content.description,
+  url: canonical, inLanguage: locale, mainEntityOfPage: canonical,
+  publisher: { '@type': 'Organization', name: 'Are We in a Bubble Yet?', url: `${site}/` }
+};
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={content.description} />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={locale} href={canonical} />
+    <link rel="alternate" hreflang={locale === 'en' ? 'es' : 'en'} href={alternate} />
+    <link rel="alternate" hreflang="x-default" href={locale === 'en' ? canonical : alternate} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Are We in a Bubble Yet?" />
+    <meta property="og:title" content={content.title} />
+    <meta property="og:description" content={content.description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={`${site}${c.image}`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={content.title} />
+    <meta name="twitter:description" content={content.description} />
+    <meta name="twitter:image" content={`${site}${c.image}`} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
+    <Analytics />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
+    <title>{content.title} | Are We in a Bubble Yet?</title>
+  </head>
+  <body>
+    <header class="wrap">
+      <a class="wordmark" href={c.path}><i></i>{c.wordmark}</a>
+      <a class="language" href={articleAlternatePath(article, locale)}>{c.otherLabel}</a>
+    </header>
+    <main class="wrap">
+      <article>
+        <p class="kicker">{content.kicker}</p>
+        <h1>{content.title}</h1>
+        <p class="intro">{content.intro}</p>
+        <div class="rule"><span>01</span><span>{locale === 'es' ? 'LECTURA · 4 MIN' : '4 MIN READ'}</span></div>
+        {content.sections.map(([heading, body], index) => (
+          <section>
+            <span>0{index + 1}</span>
+            <div><h2>{heading}</h2><p>{body}</p></div>
+          </section>
+        ))}
+      </article>
+      <aside>
+        <p class="kicker">{locale === 'es' ? 'SIGUE LEYENDO' : 'KEEP READING'}</p>
+        {related.map((item) => <a href={articlePath(item, locale)}><span>{item[locale].kicker}</span>{item[locale].title} →</a>)}
+        <a class="dashboard" href={c.path}>{locale === 'es' ? 'VER EL INDICADOR DE HOY' : 'SEE TODAY’S BUBBLE CALL'} ↗</a>
+      </aside>
+    </main>
+    <footer class="wrap"><span>{c.disclaimer}</span><a href={c.path}>{c.wordmark} ↑</a></footer>
+  </body>
+</html>
+
+<style>
+  :root { --paper:#f0eee7; --ink:#151711; --muted:#6d7067; --line:#c9c7bd; --risk:#ff4d2e; }
+  * { box-sizing:border-box; } body { margin:0; color:var(--ink); background:var(--paper); font-family:'Manrope',sans-serif; } a { color:inherit; }
+  .wrap { width:min(1120px,calc(100% - 64px)); margin:auto; }
+  header { height:78px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
+  .wordmark { display:flex; align-items:center; gap:11px; text-decoration:none; font:500 11px 'DM Mono',monospace; letter-spacing:.08em; }
+  .wordmark i { width:12px; height:12px; border-radius:50%; background:var(--risk); box-shadow:0 0 0 4px rgba(255,77,46,.14); }
+  .language { display:grid; place-items:center; width:32px; height:32px; border:1px solid var(--line); border-radius:50%; text-decoration:none; font:500 9px 'DM Mono',monospace; }
+  main { display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:100px; padding-block:100px 130px; }
+  .kicker { margin:0; font:500 10px 'DM Mono',monospace; letter-spacing:.14em; }
+  .kicker::before { content:'— '; color:var(--risk); }
+  h1 { max-width:850px; margin:28px 0 38px; font:400 clamp(68px,9vw,126px)/.88 'Instrument Serif',serif; letter-spacing:-.055em; }
+  .intro { max-width:760px; margin:0; font-size:22px; line-height:1.55; letter-spacing:-.025em; }
+  .rule { display:flex; justify-content:space-between; margin:70px 0 0; padding:12px 0; border-top:1px solid var(--ink); color:var(--muted); font:500 8px 'DM Mono',monospace; letter-spacing:.1em; }
+  article section { display:grid; grid-template-columns:70px 1fr; gap:25px; padding:42px 0; border-top:1px solid var(--line); }
+  article section > span { color:var(--risk); font:500 9px 'DM Mono',monospace; }
+  h2 { margin:0 0 18px; font:400 38px/1 'Instrument Serif',serif; }
+  article section p { margin:0; color:#494c44; font-size:16px; line-height:1.8; }
+  aside { align-self:start; position:sticky; top:40px; margin-top:292px; border-top:1px solid var(--ink); padding-top:18px; }
+  aside > a { display:block; padding:20px 0; border-bottom:1px solid var(--line); text-decoration:none; font:400 24px/1.05 'Instrument Serif',serif; }
+  aside > a span { display:block; margin-bottom:9px; color:var(--muted); font:500 7px 'DM Mono',monospace; letter-spacing:.1em; }
+  aside > a:hover { color:var(--risk); }
+  aside .dashboard { margin-top:20px; border:1px solid var(--ink); padding:16px; font:500 9px 'DM Mono',monospace; letter-spacing:.08em; }
+  footer { min-height:110px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--ink); color:var(--muted); font:500 8px 'DM Mono',monospace; letter-spacing:.08em; }
+  footer a { text-decoration:none; }
+  @media(max-width:800px) { .wrap{width:calc(100% - 32px)} main{grid-template-columns:1fr;gap:40px;padding-block:70px} h1{font-size:19vw} .intro{font-size:19px} aside{position:static;margin-top:0} article section{grid-template-columns:38px 1fr} footer{gap:25px} }
+</style>

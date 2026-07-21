@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { calculateScore, getSummary, getVerdict } from './scoring.mjs';
+import { calculateConfidence, calculateScore, getSummary, getVerdict } from './scoring.mjs';
 
 const dataPath = resolve('src/data/indicators.json');
 const dashboard = JSON.parse(await readFile(dataPath, 'utf8'));
@@ -39,9 +39,12 @@ function annualHistory(points, transform = (value) => value) {
 }
 
 async function updateFastSignals() {
-  const [vixPoints, creditPoints] = await Promise.all([fred('VIXCLS'), fred('BAA10Y')]);
+  const [vixPoints, creditPoints, allocationPoints] = await Promise.all([
+    fred('VIXCLS'), fred('BAA10Y'), fred('BOGZ1FL153064486Q')
+  ]);
   const vixLast = vixPoints.at(-1);
   const creditLast = creditPoints.at(-1);
+  const allocationLast = allocationPoints.at(-1);
 
   Object.assign(indicator('vix'), {
     value: Number(vixLast.value.toFixed(1)), displayValue: vixLast.value.toFixed(1),
@@ -57,6 +60,13 @@ async function updateFastSignals() {
     change: creditLast.value < 1.8 ? 'Lenders are pricing in little risk' : 'Credit risk is being priced in',
     score: clamp((4.5 - creditLast.value) / 3 * 100), status: creditLast.value < 1.8 ? 'Complacent' : 'Neutral',
     asOf: monthYear(creditLast.date), history: annualHistory(creditPoints, (v) => Number(v.toFixed(2)))
+  });
+  Object.assign(indicator('allocation'), {
+    value: Number(allocationLast.value.toFixed(2)), displayValue: `${allocationLast.value.toFixed(1)}%`,
+    change: 'Latest quarterly reading', score: clamp((allocationLast.value - 25) / 25 * 100),
+    status: allocationLast.value >= 45 ? 'Extreme' : allocationLast.value >= 40 ? 'Elevated' : 'Neutral',
+    asOf: `Q${Math.floor(new Date(allocationLast.date).getUTCMonth() / 3) + 1} ${allocationLast.date.slice(0, 4)}`,
+    history: annualHistory(allocationPoints, (value) => Number(value.toFixed(1)))
   });
 }
 
@@ -117,6 +127,7 @@ if (updates.every((result) => result.status === 'rejected')) throw new Error('Ev
 dashboard.score = calculateScore(dashboard.indicators);
 dashboard.verdict = getVerdict(dashboard.score);
 dashboard.summary = getSummary(dashboard.verdict);
+dashboard.confidence = calculateConfidence(dashboard.indicators, dashboard.score);
 dashboard.updatedAt = new Date().toISOString();
 await writeFile(dataPath, `${JSON.stringify(dashboard, null, 2)}\n`);
 console.log(`Updated dashboard: ${dashboard.verdict}, ${dashboard.score}/100`);

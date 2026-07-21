@@ -1,0 +1,48 @@
+---
+interface Props {
+  score: number;
+  label: string;
+  tier: string;
+  help: string;
+  detail: string;
+}
+
+const { score, label, tier, help, detail } = Astro.props;
+const safeScore = Math.max(0, Math.min(100, score));
+---
+
+<aside class="confidence" aria-label={`${label}: ${safeScore} / 100. ${help}`}>
+  <div class="dial" role="img" aria-hidden="true">
+    <svg viewBox="0 0 120 120">
+      <circle class="track" cx="60" cy="60" r="48" pathLength="100" />
+      <circle class="value" cx="60" cy="60" r="48" pathLength="100" stroke-dasharray={`${safeScore} 100`} />
+    </svg>
+    <strong>{safeScore}</strong>
+    <span>/ 100</span>
+  </div>
+  <div class="copy">
+    <span>{label}</span>
+    <strong>{tier}</strong>
+    <p>{detail}</p>
+    <small>{help}</small>
+  </div>
+</aside>
+
+<style>
+  .confidence { display:grid; grid-template-columns:92px 1fr; gap:18px; align-items:center; margin-top:34px; padding-top:26px; border-top:1px solid var(--line); }
+  .dial { position:relative; width:92px; aspect-ratio:1; display:grid; place-items:center; }
+  svg { position:absolute; inset:0; width:100%; transform:rotate(-90deg); }
+  circle { fill:none; stroke-width:7; }
+  .track { stroke:#d8d6cd; }
+  .value { stroke:var(--risk); stroke-linecap:round; animation:draw 1s .2s both ease-out; }
+  .dial strong { margin-top:-5px; font:400 30px 'Instrument Serif',serif; }
+  .dial span { position:absolute; top:58px; color:var(--muted); font:500 7px 'DM Mono',monospace; }
+  .copy > span,.copy > strong { display:block; font:500 8px 'DM Mono',monospace; letter-spacing:.1em; }
+  .copy > span { color:var(--muted); }
+  .copy > strong { margin-top:6px; color:var(--risk); }
+  .copy p { margin:9px 0 0; color:var(--ink); font-size:11px; line-height:1.5; }
+  .copy small { display:block; margin-top:6px; color:var(--muted); font-size:9px; line-height:1.5; }
+  @keyframes draw { from { stroke-dasharray:0 100; } }
+  @media (max-width:800px) { .confidence { grid-template-columns:80px 1fr; } .dial { width:80px; } }
+  @media (prefers-reduced-motion:reduce) { .value { animation:none; } }
+</style>
