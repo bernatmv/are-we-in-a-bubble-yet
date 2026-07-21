@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-21T15:37:17.599Z",
+  "updatedAt": "2026-07-21T17:24:06.941Z",
   "market": "United States equities",
   "score": 91,
   "verdict": "YES",
@@ -418,34 +418,138 @@
     },
     {
       "id": "credit",
-      "name": "High-yield spread",
+      "name": "Corporate credit spread",
       "eyebrow": "CREDIT · 12% WEIGHT",
-      "value": 2.69,
-      "displayValue": "2.7%",
+      "value": 1.59,
+      "displayValue": "1.6%",
       "change": "Lenders are pricing in little risk",
-      "score": 95,
+      "score": 97,
       "status": "Complacent",
-      "description": "The extra yield demanded from lower-quality US companies. Very tight spreads suggest lenders see little risk and can signal late-cycle complacency.",
-      "threshold": "Complacency below 3.25%",
-      "source": "ICE BofA via FRED",
-      "sourceUrl": "https://fred.stlouisfed.org/series/BAMLH0A0HYM2",
+      "description": "The extra yield paid by Baa-rated US companies over 10-year Treasuries. Very tight spreads suggest lenders see little risk and can signal late-cycle complacency.",
+      "threshold": "Complacency below 1.80%",
+      "source": "Moody's via FRED",
+      "sourceUrl": "https://fred.stlouisfed.org/series/BAA10Y",
       "asOf": "Jul 2026",
       "history": [
         [
+          1997,
+          1.53
+        ],
+        [
+          1998,
+          2.58
+        ],
+        [
+          1999,
+          1.73
+        ],
+        [
+          2000,
+          2.88
+        ],
+        [
+          2001,
+          2.85
+        ],
+        [
+          2002,
+          3.48
+        ],
+        [
+          2003,
+          2.34
+        ],
+        [
+          2004,
+          1.86
+        ],
+        [
+          2005,
+          1.82
+        ],
+        [
+          2006,
+          1.64
+        ],
+        [
+          2007,
+          2.52
+        ],
+        [
+          2008,
+          5.82
+        ],
+        [
+          2009,
+          2.54
+        ],
+        [
+          2010,
+          2.68
+        ],
+        [
+          2011,
+          3.27
+        ],
+        [
+          2012,
+          2.85
+        ],
+        [
+          2013,
+          2.33
+        ],
+        [
+          2014,
+          2.51
+        ],
+        [
+          2015,
+          3.23
+        ],
+        [
+          2016,
+          2.28
+        ],
+        [
+          2017,
+          1.77
+        ],
+        [
+          2018,
+          2.45
+        ],
+        [
+          2019,
+          1.98
+        ],
+        [
+          2020,
+          2.18
+        ],
+        [
+          2021,
+          0
+        ],
+        [
+          2022,
+          1.99
+        ],
+        [
           2023,
-          3.39
+          1.61
         ],
         [
           2024,
-          2.92
+          1.42
         ],
         [
           2025,
-          2.81
+          1.72
         ],
         [
           2026,
-          2.69
+          1.59
         ]
       ]
     },

@@ -7,8 +7,9 @@
     "dev": "astro dev",
     "assets": "node scripts/generate-assets.mjs",
     "build": "astro check && astro build",
+    "data:check": "node scripts/check-data.mjs",
     "seo:check": "node scripts/check-seo.mjs",
-    "vercel-build": "npm run update-data && npm run build && npm run seo:check",
+    "vercel-build": "npm run update-data && npm run data:check && npm run build && npm run seo:check",
     "preview": "astro preview",
     "update-data": "node scripts/update-data.mjs"
   },
