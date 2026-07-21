@@ -95,7 +95,7 @@ const schema = {
 </html>
 
 <style>
-  :root { --paper:#f0eee7; --ink:#151711; --muted:#6d7067; --line:#c9c7bd; --risk:#ff4d2e; }
+  :root { --paper:#f0eee7; --ink:#151711; --muted:#686b62; --line:#c9c7bd; --risk:#ff4d2e; --risk-text:#bf3520; }
   * { box-sizing:border-box; } body { margin:0; color:var(--ink); background:var(--paper); font-family:'Manrope',sans-serif; } a { color:inherit; }
   .wrap { width:min(1120px,calc(100% - 64px)); margin:auto; }
   header { height:78px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
@@ -107,13 +107,13 @@ const schema = {
   .intro { max-width:760px; margin:0; font-size:22px; line-height:1.55; letter-spacing:-.025em; }
   .rule { display:flex; justify-content:space-between; margin:70px 0 0; padding:12px 0; border-top:1px solid var(--ink); color:var(--muted); font:500 8px 'DM Mono',monospace; letter-spacing:.1em; }
   article section { display:grid; grid-template-columns:70px 1fr; gap:25px; padding:42px 0; border-top:1px solid var(--line); }
-  article section > span { color:var(--risk); font:500 9px 'DM Mono',monospace; }
+  article section > span { color:var(--risk-text); font:500 9px 'DM Mono',monospace; }
   h2 { margin:0 0 18px; font:400 38px/1 'Instrument Serif',serif; }
   article section p { margin:0; color:#494c44; font-size:16px; line-height:1.8; }
   aside { align-self:start; position:sticky; top:40px; margin-top:292px; border-top:1px solid var(--ink); padding-top:18px; }
   aside > a { display:block; padding:20px 0; border-bottom:1px solid var(--line); text-decoration:none; font:400 24px/1.05 'Instrument Serif',serif; }
   aside > a span { display:block; margin-bottom:9px; color:var(--muted); font:500 7px 'DM Mono',monospace; letter-spacing:.1em; }
-  aside > a:hover { color:var(--risk); }
+  aside > a:hover { color:var(--risk-text); }
   aside .dashboard { margin-top:20px; border:1px solid var(--ink); padding:16px; font:500 9px 'DM Mono',monospace; letter-spacing:.08em; }
   footer { min-height:110px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--ink); color:var(--muted); font:500 8px 'DM Mono',monospace; letter-spacing:.08em; }
   footer a { text-decoration:none; }

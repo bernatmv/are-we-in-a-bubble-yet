@@ -34,11 +34,11 @@ const locales = Object.entries(localeMeta) as [Locale, typeof localeMeta[Locale]
   .language-selector { position:relative; z-index:20; }
   summary { width:34px; height:34px; display:grid; place-items:center; border:1px solid var(--line); border-radius:50%; cursor:pointer; list-style:none; font:500 9px 'DM Mono',monospace; letter-spacing:.06em; transition:border-color .2s,color .2s,background .2s; }
   summary::-webkit-details-marker { display:none; }
-  summary:hover,.language-selector[open] summary { color:var(--risk); border-color:var(--risk); background:var(--paper); }
+  summary:hover,.language-selector[open] summary { color:var(--risk-text); border-color:var(--risk-text); background:var(--paper); }
   nav { position:absolute; top:43px; right:0; width:178px; padding:7px; border:1px solid var(--ink); background:var(--paper); box-shadow:6px 6px 0 rgba(21,23,17,.12); }
   a { display:flex; align-items:center; gap:12px; padding:9px 10px; color:var(--ink); text-decoration:none; font:500 10px 'Manrope',sans-serif; }
   a + a { border-top:1px solid var(--line); }
-  a:hover { color:var(--risk); }
+  a:hover { color:var(--risk-text); }
   a[aria-current='page'] { background:rgba(21,23,17,.055); }
   a span { width:24px; color:var(--muted); font:500 8px 'DM Mono',monospace; letter-spacing:.06em; }
 </style>
