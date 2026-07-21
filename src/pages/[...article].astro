@@ -1,6 +1,7 @@
 ---
 import Analytics from '../components/Analytics.astro';
 import BrandMark from '../components/BrandMark.astro';
+import FontFaces from '../components/FontFaces.astro';
 import LanguageSelector from '../components/LanguageSelector.astro';
 import { articleAlternatePath, articlePath, articles, type ArticleLocale } from '../articles';
 import { copy } from '../i18n';
@@ -39,6 +40,7 @@ const schema = {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
+    <FontFaces />
     <meta name="description" content={content.description} />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <link rel="canonical" href={canonical} />
@@ -62,9 +64,6 @@ const schema = {
     <meta name="twitter:image" content={`${site}${c.image}`} />
     <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
     <Analytics />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
     <title>{content.title} | Are We in a Bubble Yet?</title>
   </head>
   <body>

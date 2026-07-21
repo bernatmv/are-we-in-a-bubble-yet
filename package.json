@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "assets": "node scripts/generate-assets.mjs",
-    "build": "astro check && astro build",
+    "build": "astro check && astro build && node scripts/inline-dashboard-css.mjs",
     "copy:check": "node scripts/check-copy.mjs",
     "data:check": "node scripts/check-data.mjs",
     "seo:check": "node scripts/check-seo.mjs",

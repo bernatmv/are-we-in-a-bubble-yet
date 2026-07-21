@@ -5,6 +5,7 @@ import { articlePath, articles } from '../articles';
 import Analytics from '../components/Analytics.astro';
 import BrandMark from '../components/BrandMark.astro';
 import ConfidenceGauge from '../components/ConfidenceGauge.astro';
+import FontFaces from '../components/FontFaces.astro';
 import LanguageSelector from '../components/LanguageSelector.astro';
 import SpeedGauge from '../components/SpeedGauge.astro';
 
@@ -108,6 +109,7 @@ const schema = {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
+    <FontFaces />
     <meta name="description" content={c.description} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="theme-color" content="#f0eee7" />
@@ -140,9 +142,6 @@ const schema = {
     <meta name="twitter:image:alt" content={c.imageAlt} />
     <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
     <Analytics />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
     <title>{c.title}</title>
   </head>
   <body>
