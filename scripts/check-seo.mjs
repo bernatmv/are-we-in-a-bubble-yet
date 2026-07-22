@@ -3,24 +3,24 @@ import { resolve } from 'node:path';
 import sharp from 'sharp';
 
 const pages = [
-  { file: 'dist/index.html', lang: 'en', canonical: 'https://areweinabubleyet.com/', image: 'og-en.png' },
-  { file: 'dist/es/index.html', lang: 'es', canonical: 'https://areweinabubleyet.com/es/', image: 'og-es.png' },
-  { file: 'dist/ca/index.html', lang: 'ca', canonical: 'https://areweinabubleyet.com/ca/', image: 'og-en.png' },
-  { file: 'dist/de/index.html', lang: 'de', canonical: 'https://areweinabubleyet.com/de/', image: 'og-en.png' },
-  { file: 'dist/fr/index.html', lang: 'fr', canonical: 'https://areweinabubleyet.com/fr/', image: 'og-en.png' },
-  { file: 'dist/it/index.html', lang: 'it', canonical: 'https://areweinabubleyet.com/it/', image: 'og-en.png' },
-  { file: 'dist/ja/index.html', lang: 'ja', canonical: 'https://areweinabubleyet.com/ja/', image: 'og-en.png' }
+  { file: 'dist/index.html', lang: 'en', canonical: 'https://www.areweinabubbleyet.com/', image: 'og-en.png' },
+  { file: 'dist/es/index.html', lang: 'es', canonical: 'https://www.areweinabubbleyet.com/es/', image: 'og-es.png' },
+  { file: 'dist/ca/index.html', lang: 'ca', canonical: 'https://www.areweinabubbleyet.com/ca/', image: 'og-en.png' },
+  { file: 'dist/de/index.html', lang: 'de', canonical: 'https://www.areweinabubbleyet.com/de/', image: 'og-en.png' },
+  { file: 'dist/fr/index.html', lang: 'fr', canonical: 'https://www.areweinabubbleyet.com/fr/', image: 'og-en.png' },
+  { file: 'dist/it/index.html', lang: 'it', canonical: 'https://www.areweinabubbleyet.com/it/', image: 'og-en.png' },
+  { file: 'dist/ja/index.html', lang: 'ja', canonical: 'https://www.areweinabubbleyet.com/ja/', image: 'og-en.png' }
 ];
 const dashboardLanguages = ['en', 'es', 'ca', 'de', 'fr', 'it', 'ja'];
 const articlePages = [
-  ['dist/learn/how-to-spot-a-stock-market-bubble/index.html', 'en', 'https://areweinabubleyet.com/learn/how-to-spot-a-stock-market-bubble/'],
-  ['dist/learn/what-is-the-shiller-cape-ratio/index.html', 'en', 'https://areweinabubleyet.com/learn/what-is-the-shiller-cape-ratio/'],
-  ['dist/learn/margin-debt-and-stock-market-bubbles/index.html', 'en', 'https://areweinabubleyet.com/learn/margin-debt-and-stock-market-bubbles/'],
-  ['dist/learn/how-our-bubble-indicator-works/index.html', 'en', 'https://areweinabubleyet.com/learn/how-our-bubble-indicator-works/'],
-  ['dist/es/aprender/como-detectar-una-burbuja-bursatil/index.html', 'es', 'https://areweinabubleyet.com/es/aprender/como-detectar-una-burbuja-bursatil/'],
-  ['dist/es/aprender/que-es-el-ratio-cape-de-shiller/index.html', 'es', 'https://areweinabubleyet.com/es/aprender/que-es-el-ratio-cape-de-shiller/'],
-  ['dist/es/aprender/deuda-de-margen-y-burbujas-bursatiles/index.html', 'es', 'https://areweinabubleyet.com/es/aprender/deuda-de-margen-y-burbujas-bursatiles/'],
-  ['dist/es/aprender/como-funciona-el-indicador-de-burbuja/index.html', 'es', 'https://areweinabubleyet.com/es/aprender/como-funciona-el-indicador-de-burbuja/']
+  ['dist/learn/how-to-spot-a-stock-market-bubble/index.html', 'en', 'https://www.areweinabubbleyet.com/learn/how-to-spot-a-stock-market-bubble/'],
+  ['dist/learn/what-is-the-shiller-cape-ratio/index.html', 'en', 'https://www.areweinabubbleyet.com/learn/what-is-the-shiller-cape-ratio/'],
+  ['dist/learn/margin-debt-and-stock-market-bubbles/index.html', 'en', 'https://www.areweinabubbleyet.com/learn/margin-debt-and-stock-market-bubbles/'],
+  ['dist/learn/how-our-bubble-indicator-works/index.html', 'en', 'https://www.areweinabubbleyet.com/learn/how-our-bubble-indicator-works/'],
+  ['dist/es/aprender/como-detectar-una-burbuja-bursatil/index.html', 'es', 'https://www.areweinabubbleyet.com/es/aprender/como-detectar-una-burbuja-bursatil/'],
+  ['dist/es/aprender/que-es-el-ratio-cape-de-shiller/index.html', 'es', 'https://www.areweinabubbleyet.com/es/aprender/que-es-el-ratio-cape-de-shiller/'],
+  ['dist/es/aprender/deuda-de-margen-y-burbujas-bursatiles/index.html', 'es', 'https://www.areweinabubbleyet.com/es/aprender/deuda-de-margen-y-burbujas-bursatiles/'],
+  ['dist/es/aprender/como-funciona-el-indicador-de-burbuja/index.html', 'es', 'https://www.areweinabubbleyet.com/es/aprender/como-funciona-el-indicador-de-burbuja/']
 ];
 
 function assert(condition, message) {
@@ -79,7 +79,7 @@ for (const [file, lang, canonical] of articlePages) {
 const robots = await readFile(resolve('dist/robots.txt'), 'utf8');
 const sitemap = await readFile(resolve('dist/sitemap.xml'), 'utf8');
 const feed = await readFile(resolve('dist/feed.xml'), 'utf8');
-assert(robots.includes('Sitemap: https://areweinabubleyet.com/sitemap.xml'), 'robots.txt must advertise the sitemap');
+assert(robots.includes('Sitemap: https://www.areweinabubbleyet.com/sitemap.xml'), 'robots.txt must advertise the sitemap');
 for (const [, , canonical] of [...pages.map((page) => [page.file, page.lang, page.canonical]), ...articlePages]) {
   assert(sitemap.includes(`<loc>${canonical}</loc>`), `sitemap is missing ${canonical}`);
 }

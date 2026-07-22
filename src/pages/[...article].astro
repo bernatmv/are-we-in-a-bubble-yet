@@ -16,7 +16,7 @@ export function getStaticPaths() {
 const { article, locale } = Astro.props as { article: typeof articles[number], locale: ArticleLocale };
 const c = copy[locale];
 const content = article[locale];
-const site = 'https://areweinabubleyet.com';
+const site = 'https://www.areweinabubbleyet.com';
 const path = articlePath(article, locale);
 const canonical = new URL(path, site).href;
 const alternate = new URL(articleAlternatePath(article, locale), site).href;
