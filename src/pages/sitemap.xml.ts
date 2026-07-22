@@ -1,7 +1,7 @@
 import { articlePath, articles } from '../articles';
 import { localeMeta } from '../i18n';
 
-const site = 'https://areweinabubleyet.com';
+const site = 'https://www.areweinabubbleyet.com';
 const absolute = (path: string) => new URL(path, site).href;
 
 function alternates(items: [string, string][]) {

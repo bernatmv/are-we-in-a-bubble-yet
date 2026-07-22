@@ -14,7 +14,7 @@ interface Props { locale?: Locale }
 const locale = Astro.props.locale ?? 'en';
 const c = copy[locale];
 const ui = uiCopy[locale];
-const site = 'https://areweinabubleyet.com';
+const site = 'https://www.areweinabubbleyet.com';
 const canonical = new URL(c.path, site).href;
 
 const colors = { Extreme: '#ff4d2e', Elevated: '#d7a329', Complacent: '#df7b17', Neutral: '#526656' };

@@ -10,7 +10,7 @@ const indicator = (id) => dashboard.indicators.find((item) => item.id === id);
 const monthYear = (date) => new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(date));
 
 async function fetchBuffer(url) {
-  const response = await fetch(url, { headers: { 'user-agent': 'areweinabubleyet.com data updater' } });
+  const response = await fetch(url, { headers: { 'user-agent': 'www.areweinabubbleyet.com data updater' } });
   if (!response.ok) throw new Error(`${response.status} from ${url}`);
   return Buffer.from(await response.arrayBuffer());
 }

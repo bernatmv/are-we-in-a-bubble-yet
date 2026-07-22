@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://areweinabubleyet.com/sitemap.xml
+Sitemap: https://www.areweinabubbleyet.com/sitemap.xml
