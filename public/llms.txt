@@ -1,0 +1,24 @@
+# are-we-in-a-bubble-yet
+
+> are-we-in-a-bubble-yet, published at https://areweinabubbleyet.com.
+
+Canonical site: https://areweinabubbleyet.com
+
+## Pages
+
+- [Home](https://areweinabubbleyet.com/): Entry point for are-we-in-a-bubble-yet.
+- [Sitemap.xml](https://areweinabubbleyet.com/sitemap.xml): Sitemap.xml page on are-we-in-a-bubble-yet, at /sitemap.xml.
+
+## Languages
+
+- [ca](https://areweinabubbleyet.com/ca): ca (primary) version of are-we-in-a-bubble-yet.
+- [de](https://areweinabubbleyet.com/de): de version of are-we-in-a-bubble-yet.
+- [es](https://areweinabubbleyet.com/es): es version of are-we-in-a-bubble-yet.
+- [fr](https://areweinabubbleyet.com/fr): fr version of are-we-in-a-bubble-yet.
+- [it](https://areweinabubbleyet.com/it): it version of are-we-in-a-bubble-yet.
+- [ja](https://areweinabubbleyet.com/ja): ja version of are-we-in-a-bubble-yet.
+
+## Notes
+
+- Full text index: https://areweinabubbleyet.com/llms-full.txt
+- Sitemap: https://areweinabubbleyet.com/sitemap.xml

@@ -1,0 +1,46 @@
+# are-we-in-a-bubble-yet
+
+> are-we-in-a-bubble-yet, published at https://areweinabubbleyet.com.
+
+Canonical site: https://areweinabubbleyet.com
+
+## Pages
+
+- [Home](https://areweinabubbleyet.com/): Entry point for are-we-in-a-bubble-yet.
+- [Sitemap.xml](https://areweinabubbleyet.com/sitemap.xml): Sitemap.xml page on are-we-in-a-bubble-yet, at /sitemap.xml.
+
+## Localized pages
+
+### ca
+
+- [Home](https://areweinabubbleyet.com/ca): /ca
+- [Sitemap.xml](https://areweinabubbleyet.com/ca/sitemap.xml): /ca/sitemap.xml
+
+### de
+
+- [Home](https://areweinabubbleyet.com/de): /de
+- [Sitemap.xml](https://areweinabubbleyet.com/de/sitemap.xml): /de/sitemap.xml
+
+### es
+
+- [Home](https://areweinabubbleyet.com/es): /es
+- [Sitemap.xml](https://areweinabubbleyet.com/es/sitemap.xml): /es/sitemap.xml
+
+### fr
+
+- [Home](https://areweinabubbleyet.com/fr): /fr
+- [Sitemap.xml](https://areweinabubbleyet.com/fr/sitemap.xml): /fr/sitemap.xml
+
+### it
+
+- [Home](https://areweinabubbleyet.com/it): /it
+- [Sitemap.xml](https://areweinabubbleyet.com/it/sitemap.xml): /it/sitemap.xml
+
+### ja
+
+- [Home](https://areweinabubbleyet.com/ja): /ja
+- [Sitemap.xml](https://areweinabubbleyet.com/ja/sitemap.xml): /ja/sitemap.xml
+
+## Notes
+
+- Sitemap: https://areweinabubbleyet.com/sitemap.xml
