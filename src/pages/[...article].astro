@@ -1,10 +1,10 @@
 ---
 import Analytics from '../components/Analytics.astro';
-import BrandMark from '../components/BrandMark.astro';
 import FontFaces from '../components/FontFaces.astro';
 import LanguageSelector from '../components/LanguageSelector.astro';
 import { articleAlternatePath, articlePath, articles, type ArticleLocale } from '../articles';
 import { copy } from '../i18n';
+import '../styles/global.css';
 
 export function getStaticPaths() {
   return articles.flatMap((article) => ([
@@ -39,7 +39,8 @@ const schema = {
 <html lang={locale}>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#fafafa" />
     <FontFaces />
     <meta name="description" content={content.description} />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -67,55 +68,67 @@ const schema = {
     <title>{content.title} | Are We in a Bubble Yet?</title>
   </head>
   <body>
-    <header class="wrap">
-      <a class="wordmark" href={c.path}><BrandMark />{c.wordmark}</a>
+    <div class="ticker caption" role="note">
+      <span>{content.kicker} — {locale === 'es' ? 'LECTURA · 4 MIN' : '4 MIN READ'}</span>
+      <span>{c.wordmark}</span>
+      <span>{c.disclaimer}</span>
+    </div>
+    <header class="masthead">
+      <ul class="nav">
+        <li><a class="active" href={c.path}>{c.wordmark}</a></li>
+        <li><a href="#sections">{locale === 'es' ? 'EN ESTE ARTÍCULO' : 'IN THIS ARTICLE'}</a></li>
+        <li><a href="#related">{locale === 'es' ? 'SIGUE LEYENDO' : 'KEEP READING'}</a></li>
+      </ul>
       <LanguageSelector locale={locale} />
     </header>
-    <main class="wrap">
-      <article>
-        <p class="kicker">{content.kicker}</p>
+    <main>
+      <section class="article-hero rule">
         <h1>{content.title}</h1>
-        <p class="intro">{content.intro}</p>
-        <div class="rule"><span>01</span><span>{locale === 'es' ? 'LECTURA · 4 MIN' : '4 MIN READ'}</span></div>
+        <p class="intro serif">{content.intro}</p>
+      </section>
+      <article id="sections" class="sections">
         {content.sections.map(([heading, body], index) => (
-          <section>
-            <span>0{index + 1}</span>
-            <div><h2>{heading}</h2><p>{body}</p></div>
+          <section class="rule">
+            <span class="caption">0{index + 1}</span>
+            <h2>{heading}</h2>
+            <p>{body}</p>
           </section>
         ))}
       </article>
-      <aside>
-        <p class="kicker">{locale === 'es' ? 'SIGUE LEYENDO' : 'KEEP READING'}</p>
-        {related.map((item) => <a href={articlePath(item, locale)}><span>{item[locale].kicker}</span>{item[locale].title} →</a>)}
-        <a class="dashboard" href={c.path}>{locale === 'es' ? 'VER EL INDICADOR DE HOY' : 'SEE TODAY’S BUBBLE CALL'} ↗</a>
-      </aside>
+      <section class="letter ink" aria-labelledby="related">
+        <h2 id="related" class="eyebrow">{locale === 'es' ? 'SIGUE LEYENDO' : 'KEEP READING'}</h2>
+        <nav class="related">
+          {related.map((item) => <a class="serif" href={articlePath(item, locale)}>{item[locale].title}</a>)}
+        </nav>
+        <a class="tag dashboard" href={c.path}>{locale === 'es' ? 'VER EL INDICADOR DE HOY' : 'SEE TODAY’S BUBBLE CALL'} ↗</a>
+      </section>
     </main>
-    <footer class="wrap"><span>{c.disclaimer}</span><a href={c.path}>{c.wordmark} ↑</a></footer>
+    <footer class="coordinates caption">
+      <span>° {c.wordmark}</span>
+      <span>— {c.disclaimer}</span>
+      <span>— <a href={c.path}>{locale === 'es' ? 'VOLVER AL INDICADOR' : 'BACK TO THE DASHBOARD'} ↑</a></span>
+      <span>— © {new Date().getUTCFullYear()}</span>
+    </footer>
   </body>
 </html>
 
-<style>
-  :root { --paper:#f0eee7; --ink:#151711; --muted:#686b62; --line:#c9c7bd; --risk:#ff4d2e; --risk-text:#bf3520; }
-  * { box-sizing:border-box; } body { margin:0; color:var(--ink); background:var(--paper); font-family:'Manrope',sans-serif; } a { color:inherit; }
-  .wrap { width:min(1120px,calc(100% - 64px)); margin:auto; }
-  header { height:78px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
-  .wordmark { display:flex; align-items:center; gap:11px; text-decoration:none; font:500 11px 'DM Mono',monospace; letter-spacing:.08em; }
-  main { display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:100px; padding-block:100px 130px; }
-  .kicker { margin:0; font:500 10px 'DM Mono',monospace; letter-spacing:.14em; }
-  .kicker::before { content:'— '; color:var(--risk); }
-  h1 { max-width:850px; margin:28px 0 38px; font:400 clamp(68px,9vw,126px)/.88 'Instrument Serif',serif; letter-spacing:-.055em; }
-  .intro { max-width:760px; margin:0; font-size:22px; line-height:1.55; letter-spacing:-.025em; }
-  .rule { display:flex; justify-content:space-between; margin:70px 0 0; padding:12px 0; border-top:1px solid var(--ink); color:var(--muted); font:500 8px 'DM Mono',monospace; letter-spacing:.1em; }
-  article section { display:grid; grid-template-columns:70px 1fr; gap:25px; padding:42px 0; border-top:1px solid var(--line); }
-  article section > span { color:var(--risk-text); font:500 9px 'DM Mono',monospace; }
-  h2 { margin:0 0 18px; font:400 38px/1 'Instrument Serif',serif; }
-  article section p { margin:0; color:#494c44; font-size:16px; line-height:1.8; }
-  aside { align-self:start; position:sticky; top:40px; margin-top:292px; border-top:1px solid var(--ink); padding-top:18px; }
-  aside > a { display:block; padding:20px 0; border-bottom:1px solid var(--line); text-decoration:none; font:400 24px/1.05 'Instrument Serif',serif; }
-  aside > a span { display:block; margin-bottom:9px; color:var(--muted); font:500 7px 'DM Mono',monospace; letter-spacing:.1em; }
-  aside > a:hover { color:var(--risk-text); }
-  aside .dashboard { margin-top:20px; border:1px solid var(--ink); padding:16px; font:500 9px 'DM Mono',monospace; letter-spacing:.08em; }
-  footer { min-height:110px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--ink); color:var(--muted); font:500 8px 'DM Mono',monospace; letter-spacing:.08em; }
-  footer a { text-decoration:none; }
-  @media(max-width:800px) { .wrap{width:calc(100% - 32px)} main{grid-template-columns:1fr;gap:40px;padding-block:70px} h1{font-size:19vw} .intro{font-size:19px} aside{position:static;margin-top:0} article section{grid-template-columns:38px 1fr} footer{gap:25px} }
+<style is:global>
+  .article-hero { margin-top:var(--spacing-24); padding:var(--spacing-64) var(--page-pad); display:grid; grid-template-columns:minmax(0, 1.55fr) minmax(0, 1fr); gap:var(--spacing-32); align-items:end; }
+  .article-hero h1 { font-size:clamp(44px, 7.4vw, 116px); line-height:.85; }
+  .intro { max-width:30ch; font-size:var(--text-heading-sm); line-height:1.2; }
+  .sections section { display:grid; grid-template-columns:96px minmax(0, 1fr); gap:var(--spacing-8) var(--spacing-32); padding:var(--spacing-32) var(--page-pad) var(--spacing-64); }
+  .sections .caption { color:var(--color-ash); }
+  .sections h2 { font-size:clamp(28px, 3.4vw, 48px); line-height:1.05; max-width:20ch; }
+  .sections p { grid-column:2; max-width:60ch; font-size:var(--text-subheading); line-height:1.5; letter-spacing:-.2px; }
+  .related { display:grid; max-width:34ch; margin:var(--spacing-24) auto 0; }
+  .related a { display:block; padding:var(--spacing-12) 0; border-top:1px solid var(--paper); text-decoration:none; font-size:clamp(20px, 2.2vw, var(--text-heading)); line-height:1.2; }
+  .related a:last-child { border-bottom:1px solid var(--paper); }
+  .related a:hover { font-style:italic; }
+  .dashboard { display:inline-block; margin-top:var(--spacing-32); text-decoration:none; }
+  .dashboard:hover { background:var(--paper); color:var(--ink); }
+  @media (max-width:800px) {
+    .article-hero { grid-template-columns:1fr; padding-block:var(--spacing-32); }
+    .sections section { grid-template-columns:1fr; padding-block:var(--spacing-24) var(--spacing-32); }
+    .sections p { grid-column:1; }
+  }
 </style>

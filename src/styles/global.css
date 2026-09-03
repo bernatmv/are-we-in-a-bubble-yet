@@ -1,0 +1,111 @@
+/* Henry — Gothic broadside on warm cream paper.
+   One hundred percent warm monochrome. Scale, weight and paper/ink inversion do all the work.
+   Louize Display → Fraunces · Manuka → Antonio · Neue Montreal → Inter */
+
+:root {
+  --color-paper: #fafafa;
+  --color-hairline: #eeeeee;
+  --color-midstone: #9f9f9f;
+  --color-ash: #666666;
+  --color-pebble: #b3b3b3;
+  --color-sepia: #3e3b36;
+  --color-headline-ink: #2a2722;
+
+  --font-ui: 'Inter', 'Neue Montreal', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Fraunces', 'Louize Display', Georgia, 'Times New Roman', serif;
+  --font-stamp: 'Antonio', 'Manuka', 'Arial Narrow', Impact, sans-serif;
+
+  --text-caption: 12px;
+  --text-body: 16px;
+  --text-subheading: 20px;
+  --text-heading-sm: 24px;
+  --text-heading: 32px;
+  --text-heading-lg: 77px;
+  --text-display: 132px;
+  --text-display-xl: 371px;
+
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-64: 64px;
+  --spacing-80: 80px;
+  --spacing-224: 224px;
+  --section-gap: clamp(64px, 7vw, 96px);
+  --card-padding: 16px;
+  --element-gap: 16px;
+  --page-pad: clamp(16px, 3vw, 48px);
+  --radius: 12px;
+
+  --paper: var(--color-paper);
+  --ink: var(--color-headline-ink);
+}
+
+* { box-sizing: border-box; }
+html { overflow-x: clip; color-scheme: light; scroll-behavior: smooth; background: var(--paper); }
+body {
+  margin: 0;
+  overflow-x: clip;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: var(--font-ui);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+p { margin: 0; }
+::selection { background: var(--ink); color: var(--paper); }
+:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+
+/* Surfaces — paper by default, ink when inverted. Never a third one. */
+.ink { background: var(--ink); color: var(--paper); }
+.rule { border-top: 1px solid var(--ink); }
+.ink .rule { border-top-color: var(--paper); }
+
+/* Type voices */
+.caption { font: 400 var(--text-caption)/1.5 var(--font-ui); letter-spacing: -0.12px; text-transform: uppercase; }
+.caption b, .nav b { font-weight: 700; }
+.serif { font-family: var(--font-display); font-weight: 400; font-optical-sizing: auto; letter-spacing: -0.01em; }
+.serif-italic { font-family: var(--font-display); font-weight: 400; font-style: italic; font-optical-sizing: auto; letter-spacing: -0.01em; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; font-optical-sizing: auto; margin: 0; letter-spacing: -0.01em; }
+h1 em, h2 em, h3 em { font-style: italic; }
+.stamp-text { font: 400 clamp(56px, 15.5vw, var(--text-display-xl))/0.75 var(--font-stamp); text-transform: uppercase; letter-spacing: 0; }
+
+/* Ghost tag — outlined only, 12px radius, never filled */
+.tag { display: inline-block; padding: 4px 8px; border: 1px solid currentColor; border-radius: var(--radius); font: 400 var(--text-caption)/1.5 var(--font-ui); letter-spacing: -0.12px; text-transform: uppercase; white-space: nowrap; }
+
+/* Text links — underline only */
+.link { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.link:hover { text-decoration-style: dotted; }
+
+/* Top ticker banner */
+.ticker { display: flex; justify-content: space-between; gap: var(--spacing-16); padding: 5px var(--page-pad); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+.ticker > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Masthead nav — a small uppercase list, no bar, no background */
+.masthead { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--spacing-16); padding: var(--spacing-16) var(--page-pad) 0; }
+.nav { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--spacing-12) var(--spacing-24); margin: 0; padding: 0; list-style: none; }
+.nav a { text-decoration: none; font: 700 var(--text-caption)/1.5 var(--font-ui); letter-spacing: -0.12px; text-transform: uppercase; }
+.nav a.active { font-size: var(--text-subheading); letter-spacing: -0.2px; }
+.nav a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Editorial letter on ink */
+.letter { padding: var(--spacing-64) var(--page-pad); text-align: center; }
+.letter .eyebrow { opacity: 0.6; font: 400 var(--text-caption)/1.5 var(--font-ui); letter-spacing: -0.12px; text-transform: uppercase; margin: 0; }
+.letter p.serif { max-width: 34ch; margin: var(--spacing-24) auto 0; font-size: clamp(22px, 2.4vw, var(--text-heading)); line-height: 1.2; }
+.letter .eyebrow:last-child { margin-top: var(--spacing-32); }
+
+/* Coordinate footer */
+.coordinates { display: flex; flex-wrap: wrap; gap: 4px var(--spacing-8); padding: var(--spacing-12) var(--page-pad) var(--spacing-16); border-top: 1px solid var(--ink); }
+.coordinates a { text-decoration: none; }
+.coordinates a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 800px) {
+  .ticker > span:not(:first-child) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
