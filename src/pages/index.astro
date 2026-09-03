@@ -3,11 +3,12 @@ import data from '../data/indicators.json';
 import { copy, indicatorCopy, localeMeta, statusCopy, uiCopy, type Locale } from '../i18n';
 import { articlePath, articles } from '../articles';
 import Analytics from '../components/Analytics.astro';
-import BrandMark from '../components/BrandMark.astro';
 import ConfidenceGauge from '../components/ConfidenceGauge.astro';
 import FontFaces from '../components/FontFaces.astro';
+import HalftonePlate from '../components/HalftonePlate.astro';
 import LanguageSelector from '../components/LanguageSelector.astro';
 import SpeedGauge from '../components/SpeedGauge.astro';
+import '../styles/global.css';
 
 interface Props { locale?: Locale }
 
@@ -16,8 +17,6 @@ const c = copy[locale];
 const ui = uiCopy[locale];
 const site = 'https://www.areweinabubbleyet.com';
 const canonical = new URL(c.path, site).href;
-
-const colors = { Extreme: '#ff4d2e', Elevated: '#d7a329', Complacent: '#df7b17', Neutral: '#526656' };
 
 const chartScales = {
   cape: { min: 0, mid: 25, max: 50 },
@@ -109,6 +108,9 @@ const heroDetail = elevatedCount >= 4
   : elevatedCount >= 2
     ? ui.concentrated(nameList, data.indicators.length - elevatedCount)
     : ui.contained(leadingNames[0]);
+const verdictLabel = c.verdict[data.verdict as keyof typeof c.verdict];
+const verdictFit = ((verdictLabel.length + 1) * (locale === 'ja' ? 1 : 0.56)).toFixed(2);
+const sources = [...new Set(data.indicators.map((item) => item.source))];
 const confidenceKey = data.confidence >= 75 ? 'high' : data.confidence >= 50 ? 'medium' : 'low';
 const confidenceTier = confidenceKey === 'high' ? c.confidenceHigh : confidenceKey === 'medium' ? c.confidenceMedium : c.confidenceLow;
 
@@ -145,7 +147,7 @@ const schema = {
     <FontFaces />
     <meta name="description" content={c.description} />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-    <meta name="theme-color" content="#f0eee7" />
+    <meta name="theme-color" content="#fafafa" />
     <meta name="application-name" content="Are We in a Bubble Yet?" />
     <link rel="canonical" href={canonical} />
     {Object.entries(localeMeta).map(([code, item]) => <link rel="alternate" hreflang={code} href={new URL(item.path, site).href} />)}
@@ -178,32 +180,43 @@ const schema = {
     <title>{c.title}</title>
   </head>
   <body>
-    <header class="site-header wrap">
-      <a class="wordmark" href={c.path} aria-label={c.homeLabel}>
-        <BrandMark />
-        {c.wordmark}
-      </a>
-      <div class="header-meta">
-        <div class="freshness"><span></span> {c.freshness} · {updated.toUpperCase()}</div>
-        <LanguageSelector locale={locale} />
-      </div>
+    <div class="ticker caption" role="note">
+      <span>{c.freshness} — {updated}</span>
+      <span>{c.evidenceTitle[0]} {c.evidenceTitle[1]}</span>
+      <span>{c.disclaimer}</span>
+    </div>
+
+    <header class="masthead">
+      <ul class="nav" aria-label={c.homeLabel}>
+        <li><a class="active" href={c.path} aria-label={c.homeLabel}>{c.wordmark}</a></li>
+        <li><a href="#evidence-title">{c.evidenceKicker}</a></li>
+        <li><a href="#method-title">{c.methodKicker}</a></li>
+        <li><a href="#explore-title">{c.explore}</a></li>
+      </ul>
+      <LanguageSelector locale={locale} />
     </header>
 
     <main>
-      <section class="hero wrap" aria-labelledby="verdict-title" data-score={data.score}>
+      <section class="hero" aria-labelledby="verdict-title" style={`--verdict-fit:${verdictFit}`}>
         <div class="hero-copy">
-          <h1 id="verdict-title" class:list={[data.verdict === 'MAYBE' && 'medium', !['YES', 'NO', 'MAYBE'].includes(data.verdict) && 'long']}>{c.verdict[data.verdict as keyof typeof c.verdict]}<i>.</i></h1>
-          <p class="hero-summary">{c.summaries[data.verdict as keyof typeof c.summaries]}</p>
-          <p class="hero-detail">{heroDetail}</p>
+          <p class="hero-eyebrow serif">{c.aboutTitle}</p>
+          <h1 id="verdict-title">{verdictLabel}<i>.</i></h1>
+          <p class="hero-summary serif">{c.summaries[data.verdict as keyof typeof c.summaries]}</p>
+          <p class="hero-detail caption">{heroDetail}</p>
+          <a class="caption link" href="#score-title">{c.readEvidence} ↓</a>
         </div>
-        <div class="score-panel" aria-label={`${c.scoreAria}: ${data.score} / 100`}>
-          <div class="score-top">
-            <span>{c.scoreLabel}</span>
-            <span>{data.score} / 100</span>
-          </div>
-          <div class="score-track"><span style={`width:${data.score}%`}></span></div>
-          <div class="score-labels"><span>{c.cool}</span><span>{c.stretched}</span><span>{c.bubble}</span></div>
-          <p>{ui.elevated(elevatedCount, data.indicators.length)} {c.scoreCopy}</p>
+        <div class="hero-plate"><HalftonePlate /></div>
+      </section>
+
+      <section class="score rule" aria-labelledby="score-title">
+        <div class="score-figure">
+          <h2 id="score-title" class="caption">{c.scoreLabel}</h2>
+          <p class="score-number" aria-label={`${c.scoreAria}: ${data.score} / 100`}><span class="serif">{data.score}</span><em class="serif-italic">/ 100</em></p>
+          <div class="score-track" aria-hidden="true"><span style={`width:${data.score}%`}></span></div>
+          <div class="score-labels caption"><span>{c.cool}</span><span>{c.stretched}</span><span>{c.bubble}</span></div>
+          <p class="score-copy">{ui.elevated(elevatedCount, data.indicators.length)} {c.scoreCopy}</p>
+        </div>
+        <div class="score-side">
           <ConfidenceGauge score={data.confidence} label={c.confidenceLabel} tier={confidenceTier} help={c.confidenceHelp} detail={c.confidenceCopy[confidenceKey]} />
           <nav class="signal-dials" aria-label={ui.jump}>
             {orderedIndicators.map((rawIndicator) => {
@@ -216,19 +229,19 @@ const schema = {
             })}
           </nav>
         </div>
-        <a class="scroll-cue" href="#evidence-title">↓ <span>{c.readEvidence}</span></a>
       </section>
 
-      <section class="evidence wrap" aria-labelledby="evidence-title">
-        <div class="section-heading">
-          <div>
-            <p class="kicker">{c.evidenceKicker}</p>
-            <h2 id="evidence-title">{c.evidenceTitle[0]}<br /><em>{c.evidenceTitle[1]}</em></h2>
-          </div>
-          <p>{c.evidenceIntro}</p>
+      <section class="evidence" aria-labelledby="evidence-title">
+        <div class="stamp ink">
+          <h2 id="evidence-title" class="stamp-text">{c.evidenceKicker}</h2>
+          <i class="stamp-rule" aria-hidden="true"></i>
+        </div>
+        <div class="evidence-intro">
+          <p class="serif-italic evidence-title">{c.evidenceTitle[0]} {c.evidenceTitle[1]}</p>
+          <p class="evidence-lede">{c.evidenceIntro}</p>
         </div>
 
-        <div class="cards">
+        <div class="entries">
           {orderedIndicators.map((rawIndicator, index) => {
             const indicator = localizedIndicator(rawIndicator);
             const scale = chartScales[indicator.id as keyof typeof chartScales];
@@ -244,115 +257,120 @@ const schema = {
               date: formatHistoryDate(point.time)
             }));
             return (
-            <article id={`signal-${indicator.id}`} class:list={['indicator', index === 0 && 'featured']} style={`--signal:${colors[rawIndicator.status as keyof typeof colors] ?? '#526656'}`}>
-              <div class="card-header">
-                <div>
-                  <p class="eyebrow">{String(index + 1).padStart(2, '0')} / {category}</p>
-                  <h3>{indicator.name}</h3>
-                  {indicator.id === 'buffett' && <span class="buffett-note">{ui.buffett}</span>}
-                </div>
-                <div class="card-meta">
-                  <span class="weight"><span class="weight-value">{weight}</span><small>{ui.weight}</small></span>
-                  <span class="status"><i></i>{statusCopy[locale][rawIndicator.status as keyof typeof statusCopy.en]}</span>
-                </div>
+            <article id={`signal-${indicator.id}`} class="entry rule">
+              <div class="entry-index caption">
+                <span>{String(index + 1).padStart(2, '0')}</span>
+                <span>{category}</span>
               </div>
 
-              <div class="metric-row">
-                <div>
-                  <strong>{indicator.displayValue}</strong>
-                  <span>{indicator.change}</span>
-                </div>
+              <div class="entry-lead">
+                <h3>{indicator.name}</h3>
+                {indicator.id === 'buffett' && <span class="caption buffett-note">{ui.buffett}</span>}
+                <p class="entry-value serif">{indicator.displayValue}</p>
+                <p class="entry-change">{indicator.change}</p>
+                <p class="caption entry-meta">
+                  <b>{statusCopy[locale][rawIndicator.status as keyof typeof statusCopy.en]}</b> — {weight} {ui.weight} — {c.asOf} {indicator.asOf}
+                </p>
                 <SpeedGauge id={`card-${indicator.id}`} score={indicator.score} label={c.risk} />
               </div>
 
-              <div class="chart-wrap">
-                <div
-                  class="chart-plot"
-                  tabindex="0"
-                  aria-label={`${indicator.name} historical trend. Use arrow keys to inspect values.`}
-                  data-points={JSON.stringify(inspectionPoints)}
-                >
-                  <div class="chart-canvas">
-                  <svg class="chart" viewBox="0 0 100 40" preserveAspectRatio="none" role="img" aria-label={`${indicator.name} historical trend`}>
-                    <defs>
-                      <pattern id={`dither-${indicator.id}`} width="1" height="1.8" patternUnits="userSpaceOnUse">
-                        <rect x=".12" y=".16" width=".16" height=".29" rx=".03" fill="var(--signal)" />
-                        <rect x=".64" y="1.02" width=".13" height=".24" rx=".025" fill="var(--signal)" />
-                      </pattern>
-                    </defs>
-                    <line x1="0" y1="36" x2="100" y2="36" />
-                    <line x1="0" y1="21" x2="100" y2="21" />
-                    <line x1="0" y1="6" x2="100" y2="6" />
-                    <path class="chart-area" d={chart.area} fill={`url(#dither-${indicator.id})`} />
-                    <path class="chart-line" d={chart.line} />
-                    <line class="current-point" x1={chart.last?.x} x2={chart.last?.x} y1={chart.last?.y} y2={(chart.last?.y ?? 0) + .001} />
-                  </svg>
-                  <div class="event-layer" aria-hidden="true">
-                    {visibleEvents.map((event) => (
-                      <span class="market-event" style={`left:${event.position}%`}>
-                        <b>{event.year}</b><em>{event.label}</em>
-                      </span>
-                    ))}
+              <div class="entry-body">
+                <div class="chart-wrap">
+                  <div
+                    class="chart-plot"
+                    tabindex="0"
+                    aria-label={`${indicator.name} historical trend. Use arrow keys to inspect values.`}
+                    data-points={JSON.stringify(inspectionPoints)}
+                  >
+                    <div class="chart-canvas">
+                    <svg class="chart" viewBox="0 0 100 40" preserveAspectRatio="none" role="img" aria-label={`${indicator.name} historical trend`}>
+                      <defs>
+                        <pattern id={`dither-${indicator.id}`} width="1" height="1.8" patternUnits="userSpaceOnUse">
+                          <rect x=".1" y=".14" width=".24" height=".4" rx=".05" fill="currentColor" />
+                          <rect x=".62" y="1" width=".22" height=".36" rx=".05" fill="currentColor" />
+                        </pattern>
+                      </defs>
+                      <line x1="0" y1="36" x2="100" y2="36" />
+                      <line x1="0" y1="21" x2="100" y2="21" />
+                      <line x1="0" y1="6" x2="100" y2="6" />
+                      <path class="chart-area" d={chart.area} fill={`url(#dither-${indicator.id})`} />
+                      <path class="chart-line" d={chart.line} />
+                      <line class="current-point-ring" x1={chart.last?.x} x2={chart.last?.x} y1={chart.last?.y} y2={(chart.last?.y ?? 0) + .001} />
+                      <line class="current-point" x1={chart.last?.x} x2={chart.last?.x} y1={chart.last?.y} y2={(chart.last?.y ?? 0) + .001} />
+                    </svg>
+                    <div class="event-layer" aria-hidden="true">
+                      {visibleEvents.map((event) => (
+                        <span class="market-event" style={`left:${event.position}%`}>
+                          <b>{event.year}</b><em>{event.label}</em>
+                        </span>
+                      ))}
+                    </div>
+                    <div class="chart-crosshair" aria-hidden="true"></div>
+                    <output class="chart-tooltip" aria-live="polite"><b></b><span></span></output>
+                    </div>
+                    <div class="y-axis caption" aria-hidden="true">
+                      <span>{formatChartValue(indicator.id, indicator.id === 'margin' ? scale.max / 1000000 : scale.max)}</span>
+                      <span>{formatChartValue(indicator.id, indicator.id === 'margin' ? scale.mid / 1000000 : scale.mid)}</span>
+                      <span>{formatChartValue(indicator.id, indicator.id === 'margin' ? scale.min / 1000000 : scale.min)}</span>
+                    </div>
                   </div>
-                  <div class="chart-crosshair" aria-hidden="true"></div>
-                  <output class="chart-tooltip" aria-live="polite"><b></b><span></span></output>
-                  </div>
-                  <div class="y-axis" aria-hidden="true">
-                    <span>{formatChartValue(indicator.id, indicator.id === 'margin' ? scale.max / 1000000 : scale.max)}</span>
-                    <span>{formatChartValue(indicator.id, indicator.id === 'margin' ? scale.mid / 1000000 : scale.mid)}</span>
-                    <span>{formatChartValue(indicator.id, indicator.id === 'margin' ? scale.min / 1000000 : scale.min)}</span>
-                  </div>
+                  <div class="chart-years caption"><span>{Math.floor(chart.start)}</span><span>{c.trend}</span><span>{Math.floor(chart.end)}</span></div>
                 </div>
-                <div class="chart-years"><span>{Math.floor(chart.start)}</span><span>{c.trend}</span><span>{Math.floor(chart.end)}</span></div>
+                <p class="description">{indicator.description}</p>
+                <p class="caption entry-footnote">
+                  <span>{indicator.threshold}</span>
+                  <a class="link" href={indicator.sourceUrl} target="_blank" rel="noreferrer">{c.sourceSuffix}: {indicator.source} ↗</a>
+                </p>
               </div>
-
-              <p class="description">{indicator.description}</p>
-              <div class="card-footer">
-                <span>{indicator.threshold}</span>
-                <a href={indicator.sourceUrl} target="_blank" rel="noreferrer">{indicator.source} ↗</a>
-              </div>
-              <span class="as-of">{c.asOf} {indicator.asOf.toUpperCase()}</span>
             </article>
           )})}
         </div>
       </section>
 
-      <section class="method wrap" aria-labelledby="method-title">
-        <p class="kicker">{c.methodKicker}</p>
-        <div>
-          <h2 id="method-title">{c.methodTitle[0]}<br /><em>{c.methodTitle[1]}</em></h2>
-          <div class="method-copy">
-            <p>{c.methodP1}</p>
-            <p>{c.methodP2}</p>
-          </div>
+      <section class="letter ink" aria-labelledby="method-title">
+        <h2 id="method-title" class="eyebrow">{c.methodKicker}</h2>
+        <p class="serif">{c.methodP1}</p>
+        <p class="serif">{c.methodP2}</p>
+        <p class="eyebrow">{c.methodTitle[0]} {c.methodTitle[1]}</p>
+      </section>
+
+      <section class="about" aria-labelledby="about-title">
+        <h2 id="about-title">{c.aboutTitle} <em>{c.aboutVerdict[data.verdict as keyof typeof c.aboutVerdict]}</em></h2>
+        <div class="about-copy">
+          <p>{c.aboutP1}</p>
+          <p>{c.aboutP2}</p>
         </div>
       </section>
 
-      <section class="about wrap" aria-labelledby="about-title">
-        <p class="kicker">{c.aboutKicker}</p>
-        <div>
-          <h2 id="about-title">{c.aboutTitle}<br /><em>{c.aboutVerdict[data.verdict as keyof typeof c.aboutVerdict]}</em></h2>
-          <div class="about-copy">
-            <p>{c.aboutP1}</p>
-            <p>{c.aboutP2}</p>
-          </div>
+      <div class="sources ink" aria-label={c.sourceSuffix}>
+        <div class="sources-track">
+          {[0, 1].map((copyIndex) => (
+            <div class="sources-run" aria-hidden={copyIndex === 1 ? 'true' : undefined}>
+              {sources.map((source, index) => (
+                <>
+                  <span class="serif">{source}</span>
+                  {index === 1 && <span class="tag">{c.freshness}</span>}
+                </>
+              ))}
+            </div>
+          ))}
         </div>
+      </div>
+
+      <section class="explore rule" aria-labelledby="explore-title">
+        <h2 id="explore-title" class="caption">{c.explore}</h2>
+        <nav class="explore-list">
+          {articles.map((article, index) => <a href={articlePath(article, locale)}>{c.articleTitles[index]}</a>)}
+        </nav>
       </section>
     </main>
 
-    <footer class="wrap">
-      <div class="footer-brand">
-        <a class="wordmark" href={c.path}><BrandMark /> {c.wordmark}</a>
-        <p>{c.disclaimer}</p>
-      </div>
-      <nav class="footer-reading" aria-label={c.explore}>
-        <span>{c.explore}</span>
-        {articles.map((article, index) => <a href={articlePath(article, locale)}>{c.articleTitles[index]} <i>→</i></a>)}
-      </nav>
-      <div class="footer-meta">
-        <a href="#method-title">{c.methodology} ↑</a>
-        <span>© {new Date().getUTCFullYear()} · {c.freshness}</span>
-      </div>
+    <footer class="coordinates caption">
+      <span>° {c.wordmark}</span>
+      <span>— {c.disclaimer}</span>
+      <span>— <a href="#method-title">{c.methodology} ↑</a></span>
+      <span>— © {new Date().getUTCFullYear()}</span>
+      <span>— {c.freshness} — {updated}</span>
     </footer>
     <script>
       type InspectionPoint = { x: number; y: number; value: string; date: string };
@@ -413,145 +431,119 @@ const schema = {
 </html>
 
 <style is:global>
-  :root { --paper:#f0eee7; --ink:#151711; --muted:#686b62; --line:#c9c7bd; --risk:#ff4d2e; --risk-text:#bf3520; --green:#526656; }
-  * { box-sizing:border-box; }
-  html { overflow-x:clip; color-scheme:light; scroll-behavior:smooth; }
-  body { margin:0; overflow-x:clip; color:var(--ink); background:var(--paper); font-family:'Manrope', sans-serif; font-size:15px; }
-  a { color:inherit; }
-  .wrap { width:min(1320px, calc(100% - 64px)); margin-inline:auto; }
-  .site-header { height:78px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
-  .wordmark { display:flex; align-items:center; gap:11px; font-family:'DM Mono', monospace; font-size:12px; font-weight:500; letter-spacing:.08em; text-decoration:none; }
-  .header-meta { display:flex; align-items:center; gap:22px; }
-  .freshness { display:flex; align-items:center; gap:9px; font-family:'DM Mono', monospace; font-size:10px; letter-spacing:.1em; color:var(--muted); }
-  .freshness span { width:6px; height:6px; background:#5f8b66; border-radius:50%; animation:pulse 2.5s infinite; }
-  .hero { min-height:calc(100vh - 78px); position:relative; display:grid; grid-template-columns:1.35fr .65fr; gap:9vw; align-items:center; padding-block:80px 110px; }
-  .hero-copy,.score-panel { min-width:0; }
-  .kicker,.eyebrow { font-family:'DM Mono', monospace; font-size:10px; letter-spacing:.15em; font-weight:500; }
-  .kicker::before { content:'— '; color:var(--risk); }
-  h1 { font-family:'Instrument Serif', serif; font-size:clamp(150px, 24vw, 360px); font-weight:400; line-height:.68; letter-spacing:-.07em; margin:34px 0 54px -12px; }
-  h1.medium { font-size:clamp(110px,20vw,300px); }
-  h1.long { max-width:100%; font-size:clamp(46px,10.5vw,150px); line-height:.78; letter-spacing:-.055em; white-space:nowrap; }
-  h1 i { color:var(--risk); font-style:normal; }
-  .hero-summary { max-width:610px; margin:0; font-size:clamp(20px, 2vw, 29px); line-height:1.42; letter-spacing:-.035em; }
-  .hero-detail { max-width:590px; margin:24px 0 0; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:13px; line-height:1.65; }
-  .score-panel { align-self:center; border-top:1px solid var(--ink); border-bottom:1px solid var(--line); padding:18px 0 24px; }
-  .score-top,.score-labels,.gauge-ends { display:flex; justify-content:space-between; font:500 10px 'DM Mono', monospace; letter-spacing:.08em; }
-  .score-top span:last-child { color:var(--risk-text); }
-  .score-track { height:8px; margin:18px 0 8px; background:#dad8cf; overflow:hidden; }
-  .score-track span { display:block; height:100%; background:var(--risk); transform-origin:left; animation:grow 1.2s .25s both cubic-bezier(.2,.8,.2,1); }
-  .score-labels { color:var(--muted); font-size:8px; }
-  .score-panel p { margin:28px 0 0; max-width:380px; color:var(--muted); font-size:13px; line-height:1.6; }
-  .signal-dials { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 18px; margin-top:24px; padding-top:20px; border-top:1px solid var(--line); }
-  .signal-dials a { min-width:0; color:inherit; text-decoration:none; padding:8px 0 11px; border-bottom:1px solid color-mix(in srgb,var(--line) 65%,transparent); }
-  .signal-dials a:focus-visible { outline:2px solid var(--risk-text); outline-offset:4px; }
-  .scroll-cue { position:absolute; bottom:26px; left:0; display:flex; gap:12px; align-items:center; color:var(--risk-text); font:500 9px 'DM Mono', monospace; letter-spacing:.12em; text-decoration:none; }
-  .scroll-cue:hover span { text-decoration:underline; text-underline-offset:4px; }
-  .evidence { padding-block:120px; border-top:1px solid var(--ink); }
-  #evidence-title { scroll-margin-top:48px; }
-  .section-heading { display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:end; margin-bottom:70px; }
-  h2 { font:400 clamp(54px, 6vw, 92px)/.92 'Instrument Serif', serif; letter-spacing:-.045em; margin:25px 0 0; }
-  h2 em { color:var(--muted); font-weight:400; }
-  .section-heading > p { justify-self:end; max-width:480px; margin:0; font-size:17px; line-height:1.65; color:var(--muted); }
-  .cards { display:grid; grid-template-columns:repeat(2, 1fr); border-top:1px solid var(--ink); border-left:1px solid var(--line); }
-  .indicator { position:relative; min-width:0; padding:34px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); transition:background .25s ease; scroll-margin-top:24px; }
-  .indicator:hover { background:rgba(255,255,255,.3); }
-  .indicator.featured { grid-column:span 2; }
-  .card-header { display:flex; justify-content:space-between; gap:20px; align-items:start; }
-  .card-meta { display:flex; align-items:center; gap:14px; }
-  .weight { display:flex; align-items:baseline; gap:5px; padding-right:14px; border-right:1px solid var(--line); }
-  .weight-value { color:var(--ink); font:400 13px/1 'DM Mono',monospace; }
-  .weight small { color:var(--muted); font:500 8px 'DM Mono',monospace; letter-spacing:.1em; }
-  .eyebrow { color:var(--muted); margin:0 0 14px; }
-  h3 { font:400 34px 'Instrument Serif', serif; margin:0; }
-  .buffett-note { display:inline-block; margin-top:10px; padding-bottom:3px; border-bottom:1px solid var(--risk-text); color:var(--risk-text); font:500 7px 'DM Mono',monospace; letter-spacing:.12em; }
-  .status { flex:none; display:flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:20px; padding:7px 10px; font:500 9px 'DM Mono', monospace; letter-spacing:.1em; text-transform:uppercase; }
-  .status i { width:7px; height:7px; background:var(--signal); border-radius:50%; }
-  .metric-row { display:grid; grid-template-columns:1fr 180px; gap:40px; align-items:end; padding:38px 0 32px; }
-  .metric-row strong { display:block; font:400 clamp(64px, 7vw, 106px)/.8 'Instrument Serif', serif; letter-spacing:-.055em; }
-  .metric-row > div > span { display:block; margin-top:15px; color:var(--muted); font-size:12px; }
-  .chart-wrap { border-top:1px solid var(--line); padding-top:18px; }
-  .chart-plot { position:relative; padding-right:44px; outline:none; }
-  .chart-plot:focus-visible { outline:2px solid var(--risk-text); outline-offset:7px; }
+  /* Hero — split composition: display serif left, halftone plate right */
+  .hero { display:grid; grid-template-columns:minmax(0, 1.55fr) minmax(0, 1fr); border-top:1px solid var(--ink); margin-top:var(--spacing-24); }
+  .hero-copy { display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:var(--spacing-24); padding:var(--spacing-64) var(--page-pad); }
+  .hero-eyebrow + h1 { margin-top:var(--spacing-8); }
+  .hero-eyebrow { max-width:12ch; font-size:clamp(36px, 5.3vw, var(--text-heading-lg)); line-height:.9; margin:0; }
+  h1 { font-size:min(var(--text-display), calc((100vw - 2 * var(--page-pad)) * .58 / var(--verdict-fit)), 28vh); line-height:.8; margin:0; text-transform:lowercase; }
+  h1::first-letter { text-transform:uppercase; }
+  h1 i { font-style:normal; }
+  .hero-summary { max-width:26ch; font-size:var(--text-heading-sm); line-height:1.2; margin:0; }
+  .hero-detail { max-width:56ch; margin:0; color:var(--color-ash); }
+  .hero-plate { border-left:1px solid var(--ink); display:flex; align-items:center; justify-content:center; padding:var(--spacing-32); }
+  .hero-plate svg { width:100%; max-width:640px; }
+
+  /* Score */
+  .score { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.25fr); gap:var(--spacing-64); padding:var(--spacing-64) var(--page-pad); scroll-margin-top:var(--spacing-16); }
+  #score-title { margin:0; }
+  .score-number { display:flex; align-items:baseline; gap:var(--spacing-12); margin:var(--spacing-16) 0 var(--spacing-24); line-height:.8; }
+  .score-number .serif { font-size:clamp(96px, 9vw, var(--text-display)); }
+  .score-number em { font-size:clamp(24px, 2.6vw, 35px); }
+  .score-track { height:24px; padding:3px; border:1px solid var(--ink); border-radius:var(--radius); }
+  .score-track span { display:block; height:100%; border-radius:calc(var(--radius) - 3px); background:var(--ink); transform-origin:left; animation:grow 1.2s .25s both cubic-bezier(.2,.8,.2,1); }
+  .score-labels { display:flex; justify-content:space-between; margin-top:var(--spacing-8); color:var(--color-ash); }
+  .score-copy { margin-top:var(--spacing-24); max-width:44ch; }
+  .score-side { display:grid; gap:var(--spacing-32); align-content:start; }
+  .signal-dials { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--element-gap); }
+  .signal-dials a { min-width:0; color:inherit; text-decoration:none; padding:var(--card-padding); border:1px solid var(--color-hairline); border-radius:var(--radius); transition:border-color .15s; }
+  .signal-dials a:hover { border-color:var(--ink); }
+
+  /* Evidence — stamped masthead, then stacked editorial entries */
+  .stamp { display:flex; align-items:center; gap:var(--spacing-24); padding:var(--spacing-32) var(--page-pad); overflow:hidden; }
+  .stamp-text { margin:0; white-space:nowrap; scroll-margin-top:0; }
+  .stamp-rule { flex:1; height:1px; background:var(--paper); }
+  .evidence-intro { display:grid; grid-template-columns:minmax(0, 1.55fr) minmax(0, 1fr); gap:var(--spacing-32); align-items:end; padding:var(--spacing-64) var(--page-pad) var(--spacing-32); }
+  .evidence-title { font-size:clamp(28px, 3.6vw, 48px); line-height:1.05; margin:0; }
+  .evidence-lede { max-width:46ch; }
+  .entry { display:grid; grid-template-columns:96px minmax(0, 1fr) minmax(0, 1.6fr); gap:var(--spacing-32); padding:var(--spacing-32) var(--page-pad) var(--spacing-64); scroll-margin-top:var(--spacing-16); }
+  .entry-index { display:flex; flex-direction:column; gap:4px; color:var(--color-ash); }
+  .entry-index span:first-child { color:var(--ink); }
+  .entry-lead { display:flex; flex-direction:column; align-items:flex-start; gap:var(--spacing-8); min-width:0; }
+  h3 { font-size:var(--text-heading); line-height:1.1; letter-spacing:-.32px; }
+  .buffett-note { color:var(--color-ash); }
+  .entry-value { font-size:clamp(56px, 5.4vw, var(--text-heading-lg)); line-height:.9; margin-top:var(--spacing-8); }
+  .entry-change { font-size:var(--text-subheading); line-height:1.3; letter-spacing:-.2px; }
+  .entry-meta { color:var(--color-ash); }
+  .entry-lead .speed-gauge { margin-top:var(--spacing-16); }
+  .entry-body { display:flex; flex-direction:column; gap:var(--spacing-24); min-width:0; }
+  .chart-plot { position:relative; padding-right:48px; outline:none; color:var(--ink); }
+  .chart-plot:focus-visible { outline:2px solid var(--ink); outline-offset:6px; }
   .chart-canvas { position:relative; min-width:0; cursor:crosshair; }
-  .chart { display:block; width:100%; height:180px; overflow:visible; }
-  .chart line { stroke:var(--line); stroke-width:.25; stroke-dasharray:1 2; }
-  .chart-area { opacity:.48; }
-  .chart-line { fill:none; stroke:var(--signal); stroke-width:1.15; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; filter:drop-shadow(0 1px 0 color-mix(in srgb,var(--paper) 70%,transparent)); }
-  .chart .current-point { stroke:var(--signal); stroke-width:5; stroke-linecap:round; stroke-dasharray:none; vector-effect:non-scaling-stroke; }
+  .chart { display:block; width:100%; height:200px; overflow:visible; }
+  .chart line { stroke:var(--color-pebble); stroke-width:.25; stroke-dasharray:1 2; }
+  .chart-area { opacity:.55; }
+  .chart-line { fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+  .chart .current-point-ring { stroke:var(--paper); stroke-width:11; stroke-linecap:round; stroke-dasharray:none; vector-effect:non-scaling-stroke; }
+  .chart .current-point { stroke:currentColor; stroke-width:7; stroke-linecap:round; stroke-dasharray:none; vector-effect:non-scaling-stroke; }
   .event-layer { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
-  .market-event { position:absolute; top:1px; bottom:8px; width:1px; border-left:1px dashed color-mix(in srgb,var(--ink) 36%,transparent); }
-  .market-event b,.market-event em { position:absolute; left:5px; white-space:nowrap; font:500 7px 'DM Mono',monospace; letter-spacing:.06em; }
-  .market-event b { top:2px; color:var(--ink); }
-  .market-event em { top:14px; color:var(--muted); font-style:normal; text-transform:uppercase; }
-  .y-axis { position:absolute; top:15%; right:0; bottom:10%; width:36px; display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; color:var(--muted); font:500 8px 'DM Mono',monospace; letter-spacing:.02em; }
-  .chart-crosshair { position:absolute; z-index:6; top:15%; bottom:10%; left:0; display:none; border-left:1px solid color-mix(in srgb,var(--ink) 42%,transparent); pointer-events:none; }
-  .chart-crosshair::after { content:''; position:absolute; left:-3px; top:var(--point-y,50%); width:5px; height:5px; transform:translateY(-50%); border-radius:50%; background:var(--ink); box-shadow:0 0 0 2px var(--paper); }
-  .chart-tooltip { position:absolute; z-index:7; left:0; top:0; display:none; min-width:92px; transform:translate(9px,calc(-100% - 8px)); padding:6px 8px; color:var(--paper); background:var(--ink); box-shadow:4px 4px 0 color-mix(in srgb,var(--ink) 14%,transparent); font:400 9px/1.4 'DM Mono',monospace; pointer-events:none; }
-  .chart-tooltip.align-right { transform:translate(calc(-100% - 9px),calc(-100% - 8px)); }
-  .chart-tooltip b { display:block; color:var(--signal); font-size:11px; }
-  .chart-tooltip span { white-space:nowrap; }
+  .market-event { position:absolute; top:1px; bottom:8px; width:1px; border-left:1px dashed var(--color-ash); }
+  .market-event b,.market-event em { position:absolute; left:6px; white-space:nowrap; font:400 12px/1.5 var(--font-ui); letter-spacing:-.12px; text-transform:uppercase; }
+  .market-event b { top:0; font-weight:700; }
+  .market-event em { top:16px; color:var(--color-ash); font-style:normal; }
+  .y-axis { position:absolute; top:15%; right:0; bottom:10%; width:42px; display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; color:var(--color-ash); }
+  .chart-crosshair { position:absolute; z-index:6; top:15%; bottom:10%; left:0; display:none; border-left:1px solid var(--ink); pointer-events:none; }
+  .chart-crosshair::after { content:''; position:absolute; left:-4px; top:var(--point-y,50%); width:7px; height:7px; transform:translateY(-50%); border-radius:50%; background:var(--ink); box-shadow:0 0 0 2px var(--paper); }
+  .chart-tooltip { position:absolute; z-index:7; left:0; top:0; display:none; min-width:96px; transform:translate(10px,calc(-100% - 10px)); padding:8px 10px; color:var(--paper); background:var(--ink); border-radius:var(--radius); font:400 12px/1.5 var(--font-ui); letter-spacing:-.12px; pointer-events:none; }
+  .chart-tooltip.align-right { transform:translate(calc(-100% - 10px),calc(-100% - 10px)); }
+  .chart-tooltip b { display:block; font:400 20px/1.2 var(--font-display); font-optical-sizing:auto; }
+  .chart-tooltip span { white-space:nowrap; text-transform:uppercase; }
   .chart-plot.inspecting .chart-crosshair,.chart-plot.inspecting .chart-tooltip { display:block; }
-  .chart-years { display:flex; justify-content:space-between; color:var(--muted); font:400 8px 'DM Mono', monospace; letter-spacing:.09em; }
-  .description { max-width:720px; margin:32px 0; color:#44473f; font-size:14px; line-height:1.7; }
-  .card-footer { display:flex; justify-content:space-between; align-items:end; gap:20px; border-top:1px solid var(--line); padding-top:17px; font:500 9px 'DM Mono', monospace; letter-spacing:.06em; }
-  .card-footer a { color:var(--muted); text-align:right; text-decoration:none; }
-  .card-footer a:hover { color:var(--risk-text); }
-  .as-of { position:absolute; right:8px; top:50%; transform:translateY(-50%) rotate(90deg); transform-origin:right center; color:var(--muted); font:400 7px 'DM Mono', monospace; letter-spacing:.1em; }
-  .method { padding-block:130px; border-top:1px solid var(--ink); }
-  .method > div { display:grid; grid-template-columns:1.1fr .9fr; gap:80px; align-items:end; }
-  .method-copy { display:grid; grid-template-columns:1fr 1fr; gap:34px; color:var(--muted); line-height:1.7; }
-  .method-copy p { margin:0; }
-  .about { padding-block:130px; border-top:1px solid var(--line); }
-  .about > div { display:grid; grid-template-columns:1.1fr .9fr; gap:80px; align-items:end; }
-  .about-copy { display:grid; grid-template-columns:1fr 1fr; gap:34px; color:var(--muted); line-height:1.7; }
-  .about-copy p { margin:0; }
-  footer { min-height:280px; padding-block:55px; border-top:1px solid var(--ink); display:grid; grid-template-columns:.9fr 1.35fr .75fr; gap:70px; align-items:start; font:400 9px 'DM Mono', monospace; letter-spacing:.08em; }
-  .footer-brand p { max-width:260px; margin:28px 0 0; color:var(--muted); line-height:1.6; }
-  .footer-reading > span { display:block; margin-bottom:11px; color:var(--risk-text); font-size:8px; }
-  .footer-reading a { display:flex; justify-content:space-between; gap:20px; padding:13px 0; border-top:1px solid var(--line); text-decoration:none; font:400 22px/1.15 'Instrument Serif',serif; letter-spacing:-.015em; }
-  .footer-reading a:hover { color:var(--risk-text); }
-  .footer-reading i { font:400 12px 'DM Mono',monospace; font-style:normal; }
-  .footer-meta { display:flex; min-height:165px; flex-direction:column; align-items:flex-end; justify-content:space-between; color:var(--muted); text-align:right; }
-  .footer-meta a { color:var(--ink); text-decoration:none; }
+  .chart-years { display:flex; justify-content:space-between; margin-top:var(--spacing-8); color:var(--color-ash); }
+  .description { max-width:64ch; }
+  .entry-footnote { display:flex; flex-wrap:wrap; justify-content:space-between; gap:var(--spacing-8) var(--spacing-24); padding-top:var(--spacing-16); border-top:1px solid var(--color-hairline); }
+
+  /* About */
+  .about { display:grid; grid-template-columns:minmax(0, 1.55fr) minmax(0, 1fr); gap:var(--spacing-64); align-items:end; padding:var(--section-gap) var(--page-pad); }
+  .about h2 { font-size:clamp(40px, 5.4vw, var(--text-heading-lg)); line-height:.9; }
+  .about h2 em { display:block; margin-top:var(--spacing-8); }
+  .about-copy { display:grid; gap:var(--element-gap); }
+
+  /* Sources ticker */
+  .sources { overflow:hidden; padding:var(--spacing-12) 0; border-top:1px solid var(--ink); }
+  .sources-track { display:flex; width:max-content; animation:marquee 60s linear infinite; }
+  .sources-run { display:flex; align-items:center; gap:var(--spacing-32); padding-right:var(--spacing-32); white-space:nowrap; }
+  .sources-run .serif { font-size:var(--text-heading-sm); line-height:1.2; }
+  .sources:hover .sources-track { animation-play-state:paused; }
+
+  /* Explore */
+  .explore { padding:var(--spacing-64) var(--page-pad) var(--section-gap); }
+  #explore-title { margin:0 0 var(--spacing-16); }
+  .explore-list { display:grid; }
+  .explore-list a { display:block; padding:var(--spacing-16) 0; border-top:1px solid var(--ink); text-decoration:none; font:400 clamp(24px, 2.6vw, var(--text-heading))/1.1 var(--font-display); font-optical-sizing:auto; letter-spacing:-.32px; }
+  .explore-list a:last-child { border-bottom:1px solid var(--ink); }
+  .explore-list a:hover { font-style:italic; }
+
   @keyframes grow { from { transform:scaleX(0); } }
-  @keyframes pulse { 50% { box-shadow:0 0 0 5px rgba(95,139,102,.12); } }
+  @keyframes marquee { to { transform:translateX(-50%); } }
+
   @media (max-width:800px) {
-    .wrap { width:100%; padding-left:max(20px,env(safe-area-inset-left)); padding-right:max(20px,env(safe-area-inset-right)); }
-    .site-header { height:65px; }
-    .freshness { display:none; }
-    .hero { min-height:auto; grid-template-columns:1fr; gap:64px; padding-block:64px 88px; isolation:isolate; }
-    .hero::before { content:''; position:absolute; z-index:-1; width:280px; height:280px; right:-125px; top:15px; border-radius:50%; background:radial-gradient(circle at 38% 38%,rgba(255,255,255,.48) 0 5%,rgba(255,77,46,.14) 6% 48%,transparent 49%); }
-    .hero::after { content:attr(data-score); position:absolute; z-index:-1; right:-8px; top:300px; color:rgba(21,23,17,.035); font:400 210px/1 'Instrument Serif',serif; letter-spacing:-.09em; }
-    .score-panel > p { max-width:100%; }
-    h1 { font-size:46vw; margin:35px 0 50px -4px; }
-    h1.medium { font-size:33vw; }
-    h1.long { font-size:clamp(46px,12vw,64px); }
-    .hero-summary { font-size:20px; }
-    .score-panel { width:100%; margin:0; padding:26px 0 32px; color:var(--ink); background:transparent; border-color:var(--line); color-scheme:light; }
-    .signal-dials { grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px 22px; }
-    .signal-dials a { padding-block:9px 14px; }
-    .scroll-cue { display:none; }
-    .evidence { padding-block:85px; }
-    .evidence { padding-inline:0; }
-    .evidence > .section-heading { padding-left:max(20px,env(safe-area-inset-left)); padding-right:max(20px,env(safe-area-inset-right)); }
-    .section-heading,.method > div,.about > div { grid-template-columns:1fr; gap:38px; }
-    .section-heading > p { justify-self:start; }
-    .cards { grid-template-columns:1fr; }
-    .indicator.featured { grid-column:auto; }
-    .indicator { padding:25px 20px 30px; }
-    .card-header { align-items:start; }
-    .card-meta { flex-direction:column; align-items:flex-end; gap:10px; }
-    .weight { padding:0 0 8px; border-right:0; border-bottom:1px solid var(--line); }
-    .metric-row { grid-template-columns:minmax(0,1fr) 150px; gap:18px; align-items:center; }
-    .chart { height:130px; }
-    .chart-plot { padding-right:38px; }
-    .y-axis { width:31px; font-size:7px; }
+    .masthead { flex-direction:row; }
+    .nav { gap:var(--spacing-8) var(--spacing-16); }
+    .hero { grid-template-columns:1fr; }
+    .hero-copy { padding:var(--spacing-32) var(--page-pad); gap:var(--spacing-16); }
+    h1 { font-size:min(calc((100vw - 2 * var(--page-pad)) / var(--verdict-fit)), 96px); }
+    .hero-plate { border-left:0; border-top:1px solid var(--ink); padding:var(--spacing-24); }
+    .hero-plate svg { max-width:70vw; }
+    .score,.evidence-intro,.about { grid-template-columns:1fr; gap:var(--spacing-32); padding-block:var(--spacing-32); }
+    .signal-dials { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    .entry { grid-template-columns:1fr; gap:var(--spacing-16); padding-block:var(--spacing-24) var(--spacing-32); }
+    .entry-index { flex-direction:row; gap:var(--spacing-12); }
+    .chart { height:150px; }
+    .chart-plot { padding-right:40px; }
+    .y-axis { width:34px; }
     .market-event b,.market-event em { display:none; }
-    .method { padding-block:85px; }
-    .method-copy,.about-copy { grid-template-columns:1fr; }
-    .about { padding-block:85px; }
-    footer { grid-template-columns:1fr; gap:42px; padding-block:48px; }
-    .footer-meta { min-height:auto; align-items:flex-start; gap:18px; text-align:left; }
+    .sources-track { animation-duration:40s; }
+    .explore { padding-block:var(--spacing-32) var(--spacing-64); }
   }
-  @media (prefers-reduced-motion:reduce) { * { animation:none !important; scroll-behavior:auto !important; } }
 </style>

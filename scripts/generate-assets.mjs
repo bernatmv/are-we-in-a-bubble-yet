@@ -1,48 +1,50 @@
 import sharp from 'sharp';
 import { resolve } from 'node:path';
+import { halftoneDots, halftonePath } from './halftone.mjs';
 
 const publicDir = resolve('public');
 
 const escapeXml = (text) => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
-function socialCard({ eyebrow, question, line2, footer }) {
+// Henry palette — warm monochrome only
+const paper = '#fafafa';
+const ink = '#2a2722';
+
+// The display serif (Fraunces) is a web font; librsvg only sees system fonts, so the social
+// card falls back to the closest high-contrast serif installed on the build machine.
+const serif = "Didot, 'Bodoni 72', Georgia, 'Times New Roman', serif";
+const sans = "'Helvetica Neue', Helvetica, Arial, sans-serif";
+
+const plate = halftonePath(halftoneDots({ size: 480, step: 14 }));
+
+function socialCard({ ticker, eyebrow, headline, footer }) {
   return `
   <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-    <defs>
-      <filter id="noise"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="3" stitchTiles="stitch"/><feColorMatrix values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .055 0"/></filter>
-    </defs>
-    <rect width="1200" height="630" fill="#f0eee7"/>
-    <rect width="1200" height="630" filter="url(#noise)" opacity=".42"/>
-    <line x1="64" y1="82" x2="1136" y2="82" stroke="#c9c7bd"/>
-    <g transform="translate(62 36) scale(.375)">
-      <rect width="64" height="64" rx="15" fill="#151711"/>
-      <path d="M42 17 A19 19 0 1 0 47 23" fill="none" stroke="#ff4d2e" stroke-width="4" stroke-linecap="round"/>
-      <path d="M12 46 L21 40 L28 43 L38 32 L45 35 L56 18" fill="none" stroke="#f0eee7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="56" cy="18" r="3" fill="#ff4d2e"/>
-    </g>
-    <text x="96" y="55" font-family="Courier New,monospace" font-size="15" font-weight="700" letter-spacing="2" fill="#151711">ARE WE IN A BUBBLE YET?</text>
-    <text x="64" y="162" font-family="Courier New,monospace" font-size="13" font-weight="700" letter-spacing="2.5" fill="#ff4d2e">— ${escapeXml(eyebrow)}</text>
-    <text x="60" y="302" font-family="Georgia,serif" font-size="86" letter-spacing="-4" fill="#151711">${escapeXml(question)}</text>
-    <text x="60" y="397" font-family="Georgia,serif" font-size="86" letter-spacing="-4" fill="#151711">${escapeXml(line2)}<tspan fill="#ff4d2e">?</tspan></text>
-    <g transform="translate(939 259) scale(3)">
-      <rect width="64" height="64" rx="15" fill="#151711"/>
-      <path d="M42 17 A19 19 0 1 0 47 23" fill="none" stroke="#ff4d2e" stroke-width="4" stroke-linecap="round"/>
-      <path d="M12 46 L21 40 L28 43 L38 32 L45 35 L56 18" fill="none" stroke="#f0eee7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="56" cy="18" r="3" fill="#ff4d2e"/>
-    </g>
-    <text x="64" y="560" font-family="Courier New,monospace" font-size="14" letter-spacing="1.5" fill="#6d7067">${escapeXml(footer)}</text>
+    <rect width="1200" height="630" fill="${paper}"/>
+    <line x1="0" y1="0.5" x2="1200" y2="0.5" stroke="${ink}"/>
+    <line x1="0" y1="44.5" x2="1200" y2="44.5" stroke="${ink}"/>
+    <text x="48" y="28" font-family="${sans}" font-size="13" letter-spacing="-.12" fill="${ink}">${escapeXml(ticker)}</text>
+    <line x1="760" y1="45" x2="760" y2="630" stroke="${ink}"/>
+    <g transform="translate(780 105) scale(0.83)"><path d="${plate}" fill="${ink}"/></g>
+    <text x="48" y="230" font-family="${serif}" font-style="italic" font-size="52" fill="${ink}">${escapeXml(eyebrow)}</text>
+    <text x="44" y="380" font-family="${serif}" font-size="134" letter-spacing="-3" fill="${ink}">${escapeXml(headline)}</text>
+    <text x="48" y="585" font-family="${sans}" font-size="13" letter-spacing="-.12" fill="${ink}">${escapeXml(footer)}</text>
   </svg>`;
 }
 
-const icon = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#151711"/><path d="M42 17 A19 19 0 1 0 47 23" fill="none" stroke="#ff4d2e" stroke-width="4" stroke-linecap="round"/><path d="M12 46 L21 40 L28 43 L38 32 L45 35 L56 18" fill="none" stroke="#f0eee7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="56" cy="18" r="3" fill="#ff4d2e"/></svg>`;
+const icon = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="12" fill="${ink}"/>
+  <circle cx="32" cy="32" r="19" fill="none" stroke="${paper}" stroke-width="3"/>
+  <circle cx="24.5" cy="24.5" r="4" fill="${paper}"/>
+</svg>`;
 
 await Promise.all([
   sharp(Buffer.from(icon)).resize(32, 32).png().toFile(resolve(publicDir, 'favicon-32.png')),
   sharp(Buffer.from(icon)).resize(180, 180).png().toFile(resolve(publicDir, 'apple-touch-icon.png')),
   sharp(Buffer.from(icon)).resize(192, 192).png().toFile(resolve(publicDir, 'icon-192.png')),
   sharp(Buffer.from(icon)).resize(512, 512).png().toFile(resolve(publicDir, 'icon-512.png')),
-  sharp(Buffer.from(socialCard({ eyebrow: 'LIVE MARKET CHECK', question: 'ARE WE IN A STOCK', line2: 'MARKET BUBBLE', footer: 'SIX SIGNALS · ONE CLEAR READ · UPDATED DAILY' }))).png().toFile(resolve(publicDir, 'og-en.png')),
-  sharp(Buffer.from(socialCard({ eyebrow: 'DATOS ACTUALIZADOS', question: '¿HAY UNA BURBUJA', line2: 'EN LA BOLSA', footer: 'SEIS SEÑALES · UNA LECTURA CLARA · DATOS DIARIOS' }))).png().toFile(resolve(publicDir, 'og-es.png'))
+  sharp(Buffer.from(socialCard({ ticker: 'DATA CHECKED DAILY — SIX SIGNALS. ONE HONEST READ. — NOT INVESTMENT ADVICE', eyebrow: 'Are we in a stock market', headline: 'bubble yet?', footer: '° ARE WE IN A BUBBLE YET? — SHILLER CAPE — MARKET VALUE / GDP — MARGIN DEBT — ALLOCATION — CREDIT — VIX' }))).png().toFile(resolve(publicDir, 'og-en.png')),
+  sharp(Buffer.from(socialCard({ ticker: 'DATOS REVISADOS A DIARIO — SEIS SEÑALES. UNA LECTURA HONESTA. — NO ES ASESORAMIENTO', eyebrow: '¿Estamos ya en una', headline: 'burbuja?', footer: '° ¿ESTAMOS EN UNA BURBUJA? — CAPE DE SHILLER — VALOR / PIB — DEUDA DE MARGEN — ASIGNACIÓN — CRÉDITO — VIX' }))).png().toFile(resolve(publicDir, 'og-es.png'))
 ]);
 
 console.log('Generated favicons, app icons and social cards.');

@@ -1,0 +1,15 @@
+---
+import { halftoneDots, halftonePath } from '../../scripts/halftone.mjs';
+
+interface Props { class?: string }
+const { class: className } = Astro.props;
+const path = halftonePath(halftoneDots({ size: 480, step: 14 }));
+---
+
+<svg class:list={['plate', className]} viewBox="0 0 480 480" aria-hidden="true">
+  <path d={path} fill="currentColor" />
+</svg>
+
+<style>
+  .plate { display:block; width:100%; height:auto; color:var(--ink); }
+</style>
