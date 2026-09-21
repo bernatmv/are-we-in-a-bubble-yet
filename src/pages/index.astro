@@ -133,6 +133,19 @@ const schema = {
       dateModified: data.updatedAt, inLanguage: c.lang, temporalCoverage: '1871/..',
       variableMeasured: data.indicators.map((item) => localizedIndicator(item).name),
       isBasedOn: data.indicators.map((item) => item.sourceUrl)
+    },
+    {
+      '@type': 'FAQPage', '@id': `${canonical}#faq`,
+      mainEntity: [
+        {
+          '@type': 'Question', name: c.methodKicker,
+          acceptedAnswer: { '@type': 'Answer', text: `${c.methodP1} ${c.methodP2}` }
+        },
+        {
+          '@type': 'Question', name: `${c.aboutTitle} ${c.aboutVerdict[data.verdict as keyof typeof c.aboutVerdict]}`,
+          acceptedAnswer: { '@type': 'Answer', text: `${c.aboutP1} ${c.aboutP2}` }
+        }
+      ]
     }
   ]
 };
@@ -480,70 +493,4 @@ const schema = {
   .chart-plot { position:relative; padding-right:48px; outline:none; color:var(--ink); }
   .chart-plot:focus-visible { outline:2px solid var(--ink); outline-offset:6px; }
   .chart-canvas { position:relative; min-width:0; cursor:crosshair; }
-  .chart { display:block; width:100%; height:200px; overflow:visible; }
-  .chart line { stroke:var(--color-pebble); stroke-width:.25; stroke-dasharray:1 2; }
-  .chart-area { opacity:.55; }
-  .chart-line { fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
-  .chart .current-point-ring { stroke:var(--paper); stroke-width:11; stroke-linecap:round; stroke-dasharray:none; vector-effect:non-scaling-stroke; }
-  .chart .current-point { stroke:currentColor; stroke-width:7; stroke-linecap:round; stroke-dasharray:none; vector-effect:non-scaling-stroke; }
-  .event-layer { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
-  .market-event { position:absolute; top:1px; bottom:8px; width:1px; border-left:1px dashed var(--color-ash); }
-  .market-event b,.market-event em { position:absolute; left:6px; white-space:nowrap; font:400 12px/1.5 var(--font-ui); letter-spacing:-.12px; text-transform:uppercase; }
-  .market-event b { top:0; font-weight:700; }
-  .market-event em { top:16px; color:var(--color-ash); font-style:normal; }
-  .y-axis { position:absolute; top:15%; right:0; bottom:10%; width:42px; display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; color:var(--color-ash); }
-  .chart-crosshair { position:absolute; z-index:6; top:15%; bottom:10%; left:0; display:none; border-left:1px solid var(--ink); pointer-events:none; }
-  .chart-crosshair::after { content:''; position:absolute; left:-4px; top:var(--point-y,50%); width:7px; height:7px; transform:translateY(-50%); border-radius:50%; background:var(--ink); box-shadow:0 0 0 2px var(--paper); }
-  .chart-tooltip { position:absolute; z-index:7; left:0; top:0; display:none; min-width:96px; transform:translate(10px,calc(-100% - 10px)); padding:8px 10px; color:var(--paper); background:var(--ink); border-radius:var(--radius); font:400 12px/1.5 var(--font-ui); letter-spacing:-.12px; pointer-events:none; }
-  .chart-tooltip.align-right { transform:translate(calc(-100% - 10px),calc(-100% - 10px)); }
-  .chart-tooltip b { display:block; font:400 20px/1.2 var(--font-display); font-optical-sizing:auto; }
-  .chart-tooltip span { white-space:nowrap; text-transform:uppercase; }
-  .chart-plot.inspecting .chart-crosshair,.chart-plot.inspecting .chart-tooltip { display:block; }
-  .chart-years { display:flex; justify-content:space-between; margin-top:var(--spacing-8); color:var(--color-ash); }
-  .description { max-width:64ch; }
-  .entry-footnote { display:flex; flex-wrap:wrap; justify-content:space-between; gap:var(--spacing-8) var(--spacing-24); padding-top:var(--spacing-16); border-top:1px solid var(--color-hairline); }
-
-  /* About */
-  .about { display:grid; grid-template-columns:minmax(0, 1.55fr) minmax(0, 1fr); gap:var(--spacing-64); align-items:end; padding:var(--section-gap) var(--page-pad); }
-  .about h2 { font-size:clamp(40px, 5.4vw, var(--text-heading-lg)); line-height:.9; }
-  .about h2 em { display:block; margin-top:var(--spacing-8); }
-  .about-copy { display:grid; gap:var(--element-gap); }
-
-  /* Sources ticker */
-  .sources { overflow:hidden; padding:var(--spacing-12) 0; border-top:1px solid var(--ink); }
-  .sources-track { display:flex; width:max-content; animation:marquee 60s linear infinite; }
-  .sources-run { display:flex; align-items:center; gap:var(--spacing-32); padding-right:var(--spacing-32); white-space:nowrap; }
-  .sources-run .serif { font-size:var(--text-heading-sm); line-height:1.2; }
-  .sources:hover .sources-track { animation-play-state:paused; }
-
-  /* Explore */
-  .explore { padding:var(--spacing-64) var(--page-pad) var(--section-gap); }
-  #explore-title { margin:0 0 var(--spacing-16); }
-  .explore-list { display:grid; }
-  .explore-list a { display:block; padding:var(--spacing-16) 0; border-top:1px solid var(--ink); text-decoration:none; font:400 clamp(24px, 2.6vw, var(--text-heading))/1.1 var(--font-display); font-optical-sizing:auto; letter-spacing:-.32px; }
-  .explore-list a:last-child { border-bottom:1px solid var(--ink); }
-  .explore-list a:hover { font-style:italic; }
-
-  @keyframes grow { from { transform:scaleX(0); } }
-  @keyframes marquee { to { transform:translateX(-50%); } }
-
-  @media (max-width:800px) {
-    .masthead { flex-direction:row; }
-    .nav { gap:var(--spacing-8) var(--spacing-16); }
-    .hero { grid-template-columns:1fr; }
-    .hero-copy { padding:var(--spacing-32) var(--page-pad); gap:var(--spacing-16); }
-    h1 { font-size:min(calc((100vw - 2 * var(--page-pad)) / var(--verdict-fit)), 96px); }
-    .hero-plate { border-left:0; border-top:1px solid var(--ink); padding:var(--spacing-24); }
-    .hero-plate svg { max-width:70vw; }
-    .score,.evidence-intro,.about { grid-template-columns:1fr; gap:var(--spacing-32); padding-block:var(--spacing-32); }
-    .signal-dials { grid-template-columns:repeat(2, minmax(0, 1fr)); }
-    .entry { grid-template-columns:1fr; gap:var(--spacing-16); padding-block:var(--spacing-24) var(--spacing-32); }
-    .entry-index { flex-direction:row; gap:var(--spacing-12); }
-    .chart { height:150px; }
-    .chart-plot { padding-right:40px; }
-    .y-axis { width:34px; }
-    .market-event b,.market-event em { display:none; }
-    .sources-track { animation-duration:40s; }
-    .explore { padding-block:var(--spacing-32) var(--spacing-64); }
-  }
-</style>
+  .chart {
